@@ -40,7 +40,7 @@ export function Navbar() {
                         isHome ? 'text-white' : 'text-black',
                     )}
                 >
-                    TOPDECK
+                    TOPDEK
                 </Link>
 
                 <nav className="hidden items-center gap-8 sm:flex">
