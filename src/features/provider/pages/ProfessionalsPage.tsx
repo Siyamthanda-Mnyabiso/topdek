@@ -4,7 +4,6 @@ import { supabase } from '@/lib/supabase'
 import { Search } from 'lucide-react'
 
 interface ProviderProfile {
-
     id: string
     business_name: string
     user_id: string
@@ -81,9 +80,9 @@ export function ProfessionalsPage() {
         <div className="bg-white min-h-screen">
 
             {/* PAGE HEADER */}
-            <div className="border-b border-black px-6 md:px-12 lg:px-20 py-16">
+            <div className="border-b border-black px-4 sm:px-6 md:px-12 lg:px-20 py-10 sm:py-16">
                 <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDEK</p>
-                <h1 className="mt-2 text-5xl md:text-7xl font-black uppercase tracking-tight">
+                <h1 className="mt-2 text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-tight">
                     PROFESSIONALS
                 </h1>
                 <p className="mt-4 text-sm text-black/50 tracking-wide max-w-md">
@@ -92,8 +91,8 @@ export function ProfessionalsPage() {
             </div>
 
             {/* SEARCH + FILTERS */}
-            <div className="sticky top-16 z-40 bg-white border-b border-black">
-                <div className="px-6 md:px-12 lg:px-20 py-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="sticky top-0 sm:top-16 z-30 bg-white border-b border-black">
+                <div className="px-4 sm:px-6 md:px-12 lg:px-20 py-3 sm:py-4 flex flex-col gap-3 sm:gap-4">
 
                     {/* SEARCH */}
                     <div className="relative w-full sm:max-w-sm">
@@ -108,36 +107,40 @@ export function ProfessionalsPage() {
                     </div>
 
                     {/* CATEGORY PILLS */}
-                    <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
-                        {CATEGORIES.map((cat) => {
-                            const slug = cat === 'All' ? 'all' : cat.toLowerCase().replace(/\s/g, '-')
-                            const isActive = activeCategory === slug
-                            return (
-                                <button
-                                    key={cat}
-                                    onClick={() => setCategory(cat)}
-                                    className={`whitespace-nowrap border px-3 py-1.5 text-xs font-bold tracking-[0.1em] uppercase transition-colors ${
-                                        isActive
-                                            ? 'border-black bg-black text-white'
-                                            : 'border-black/30 text-black/50 hover:border-black hover:text-black'
-                                    }`}
-                                >
-                                    {cat}
-                                </button>
-                            )
-                        })}
+                    <div className="relative -mx-4 sm:-mx-6 md:-mx-12 lg:-mx-20">
+                        <div className="flex gap-2 overflow-x-auto px-4 sm:px-6 md:px-12 lg:px-20 pb-1 scrollbar-hide">
+                            {CATEGORIES.map((cat) => {
+                                const slug = cat === 'All' ? 'all' : cat.toLowerCase().replace(/\s/g, '-')
+                                const isActive = activeCategory === slug
+                                return (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setCategory(cat)}
+                                        className={`shrink-0 whitespace-nowrap border px-3 py-1.5 text-xs font-bold tracking-[0.1em] uppercase transition-colors ${
+                                            isActive
+                                                ? 'border-black bg-black text-white'
+                                                : 'border-black/30 text-black/50 hover:border-black hover:text-black'
+                                        }`}
+                                    >
+                                        {cat}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                        {/* fade hint that more pills are scrollable, mobile only */}
+                        <div className="sm:hidden pointer-events-none absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-white to-transparent" />
                     </div>
                 </div>
             </div>
 
             {/* RESULTS */}
-            <div className="px-6 md:px-12 lg:px-20 py-12">
+            <div className="px-4 sm:px-6 md:px-12 lg:px-20 py-8 sm:py-12">
 
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
                         {[...Array(6)].map((_, i) => (
                             <div key={i} className="border border-black/10 animate-pulse">
-                                <div className="h-48 bg-zinc-100" />
+                                <div className="h-40 sm:h-48 bg-zinc-100" />
                                 <div className="p-4 space-y-2">
                                     <div className="h-4 bg-zinc-100 w-3/4" />
                                     <div className="h-3 bg-zinc-100 w-1/2" />
@@ -146,8 +149,8 @@ export function ProfessionalsPage() {
                         ))}
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="py-24 text-center">
-                        <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/30">
+                    <div className="py-16 sm:py-24 text-center">
+                        <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/30 px-4">
                             {search ? `NO RESULTS FOR "${search.toUpperCase()}"` : 'NO PROFESSIONALS LISTED YET.'}
                         </p>
                         {search && (
@@ -161,18 +164,18 @@ export function ProfessionalsPage() {
                     </div>
                 ) : (
                     <>
-                        <p className="mb-8 text-xs font-semibold tracking-[0.2em] uppercase text-black/40">
+                        <p className="mb-6 sm:mb-8 text-xs font-semibold tracking-[0.2em] uppercase text-black/40">
                             {filtered.length} PROFESSIONAL{filtered.length !== 1 ? 'S' : ''}
                         </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
                             {filtered.map((pro) => (
                                 <div
                                     key={pro.id}
                                     onClick={() => navigate(`/professionals/${pro.id}`)}
-                                    className="group cursor-pointer border border-black hover:shadow-lg transition-shadow"
+                                    className="group cursor-pointer border border-black hover:shadow-lg transition-shadow active:bg-black/[0.02]"
                                 >
                                     {/* COVER IMAGE */}
-                                    <div className="relative h-52 overflow-hidden bg-zinc-100">
+                                    <div className="relative h-40 sm:h-52 overflow-hidden bg-zinc-100">
                                         {pro.cover_image_url ? (
                                             <img
                                                 src={pro.cover_image_url}
@@ -189,7 +192,7 @@ export function ProfessionalsPage() {
 
                                         {/* LOGO */}
                                         {pro.logo_url && (
-                                            <div className="absolute bottom-3 left-3 h-10 w-10 border-2 border-white overflow-hidden bg-white">
+                                            <div className="absolute bottom-3 left-3 h-9 w-9 sm:h-10 sm:w-10 border-2 border-white overflow-hidden bg-white">
                                                 <img
                                                     src={pro.logo_url}
                                                     alt={`${pro.business_name} logo`}
@@ -200,8 +203,8 @@ export function ProfessionalsPage() {
                                     </div>
 
                                     {/* INFO */}
-                                    <div className="p-5">
-                                        <h3 className="font-black uppercase tracking-tight text-lg leading-tight">
+                                    <div className="p-4 sm:p-5">
+                                        <h3 className="font-black uppercase tracking-tight text-base sm:text-lg leading-tight">
                                             {pro.business_name}
                                         </h3>
                                         {pro.location && (
