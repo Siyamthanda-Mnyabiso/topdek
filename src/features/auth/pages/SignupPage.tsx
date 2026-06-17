@@ -31,9 +31,9 @@ export function SignupPage() {
       <div className="flex min-h-[80vh] items-center justify-center px-6">
         <div className="w-full max-w-md">
           <div className="mb-8">
-            <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDECK</p>
+            <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDEK</p>
             <h1 className="mt-2 text-4xl font-black uppercase tracking-tight">CREATE ACCOUNT</h1>
-            <p className="mt-2 text-sm text-black/50">Join TopDeck to find or offer services.</p>
+            <p className="mt-2 text-sm text-black/50">Join TopDek to find or offer services.</p>
           </div>
 
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">

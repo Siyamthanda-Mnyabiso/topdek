@@ -7,7 +7,7 @@ export function HowItWorksPage() {
 
             {/* HEADER */}
             <div className="border-b border-black px-6 md:px-12 lg:px-20 py-16">
-                <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDECK</p>
+                <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDEK</p>
                 <h1 className="mt-2 text-5xl md:text-7xl font-black uppercase tracking-tight">
                     HOW IT WORKS
                 </h1>
@@ -96,7 +96,7 @@ export function HowItWorksPage() {
             {/* CTA */}
             <section className="px-6 md:px-12 lg:px-20 py-20 text-center">
                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">
-                    READY TO TRY TOPDECK?
+                    READY TO TRY TOPDEK?
                 </h2>
                 <Link
                     to="/signup"

@@ -25,7 +25,7 @@ export function CallOutsPage() {
                 <div className="relative flex h-full max-w-7xl mx-auto flex-col justify-center px-6 md:px-12 lg:px-20">
           <span className="mb-4 flex w-fit items-center gap-1.5 border border-white/30 px-3 py-1 text-xs font-bold tracking-[0.15em] uppercase text-white/70">
             <Zap className="h-3 w-3" />
-            NEW ON TOPDECK
+            NEW ON TOPDEK
           </span>
                     <h1 className="text-[clamp(3rem,9vw,7rem)] font-black leading-none tracking-tight text-white uppercase">
                         CALL-OUTS

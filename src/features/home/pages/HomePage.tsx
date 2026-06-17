@@ -267,7 +267,7 @@ export function HomePage() {
               {/* HOW IT WORKS — LOGGED OUT */}
               <section className="px-6 md:px-12 lg:px-20 py-20 md:py-28">
                 <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40 mb-3">
-                  HOW TOPDECK WORKS
+                  HOW TOPDEK WORKS
                 </p>
                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight max-w-2xl">
                   TWO WAYS TO GET YOUR PERFECT LOOK
@@ -353,13 +353,13 @@ export function HomePage() {
                       PRECISION<br />CRAFT<br />CONSISTENCY
                     </h2>
                     <p className="mt-6 text-sm tracking-wide text-black/50 max-w-xs">
-                      Every professional on TopDeck is vetted for quality, consistency, and craft.
+                      Every professional on TopDek is vetted for quality, consistency, and craft.
                     </p>
                     <Link
                         to="/signup"
                         className="mt-8 w-fit border border-black bg-black px-6 py-3 text-xs font-bold tracking-[0.15em] uppercase text-white transition-colors hover:bg-white hover:text-black"
                     >
-                      JOIN TOPDECK
+                      JOIN TOPDEK
                     </Link>
                   </div>
                   <div className="min-h-[400px] overflow-hidden">
@@ -400,7 +400,7 @@ export function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
 
               <div className="lg:col-span-1">
-                <span className="text-lg font-black tracking-[0.2em] uppercase">TOPDECK</span>
+                <span className="text-lg font-black tracking-[0.2em] uppercase">TOPDEK</span>
                 <p className="mt-3 text-sm text-black/50 leading-relaxed max-w-xs">
                   Premium grooming, styling, and salon experiences — in store or at your door.
                 </p>
@@ -422,7 +422,7 @@ export function HomePage() {
                   FOR PROFESSIONALS
                 </h3>
                 <ul className="space-y-2.5 text-sm">
-                  <li><Link to="/for-professionals" className="text-black/70 hover:text-black transition-colors">Why TopDeck</Link></li>
+                  <li><Link to="/for-professionals" className="text-black/70 hover:text-black transition-colors">Why TopDek</Link></li>
                   <li><Link to="/signup" className="text-black/70 hover:text-black transition-colors">Create Your Store</Link></li>
                 </ul>
               </div>
@@ -447,7 +447,7 @@ export function HomePage() {
 
             <div className="mt-12 pt-8 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-xs text-black/40 tracking-wide">
-                © {new Date().getFullYear()} TopDeck. All rights reserved.
+                © {new Date().getFullYear()} TopDek. All rights reserved.
               </p>
               <p className="text-xs text-black/30 tracking-[0.15em] uppercase">
                 CAPE TOWN, SOUTH AFRICA

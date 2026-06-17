@@ -65,7 +65,7 @@ export function ForProfessionalsPage() {
             {/* BENEFITS */}
             <section className="px-6 md:px-12 lg:px-20 py-16 md:py-24 border-b border-black">
                 <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-12">
-                    WHY LIST ON TOPDECK
+                    WHY LIST ON TOPDEK
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px border border-black">
                     {BENEFITS.map((benefit, i) => (

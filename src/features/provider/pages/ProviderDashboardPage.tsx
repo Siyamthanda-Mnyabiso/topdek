@@ -34,7 +34,7 @@ export function ProviderDashboardPage() {
       <div className="min-h-screen bg-white">
 
         <div className="border-b border-black px-6 md:px-12 lg:px-20 py-12">
-          <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDECK</p>
+          <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDEK</p>
           <h1 className="mt-2 text-4xl md:text-6xl font-black uppercase tracking-tight">
             PROVIDER DASHBOARD
           </h1>

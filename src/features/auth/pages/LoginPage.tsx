@@ -59,7 +59,7 @@ export function LoginPage() {
         <div className="flex min-h-[80vh] items-center justify-center px-6">
           <div className="w-full max-w-md">
             <div className="mb-8">
-              <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDECK</p>
+              <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDEK</p>
               <h1 className="mt-2 text-4xl font-black uppercase tracking-tight">RESET PASSWORD</h1>
               <p className="mt-2 text-sm text-black/50">
                 Enter your email and we'll send you a reset link.
@@ -122,9 +122,9 @@ export function LoginPage() {
       <div className="flex min-h-[80vh] items-center justify-center px-6">
         <div className="w-full max-w-md">
           <div className="mb-8">
-            <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDECK</p>
+            <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDEK</p>
             <h1 className="mt-2 text-4xl font-black uppercase tracking-tight">WELCOME BACK</h1>
-            <p className="mt-2 text-sm text-black/50">Sign in to your TopDeck account.</p>
+            <p className="mt-2 text-sm text-black/50">Sign in to your TopDek account.</p>
           </div>
 
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
