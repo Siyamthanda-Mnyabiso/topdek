@@ -6,6 +6,16 @@ import { ClientDashboardPage } from '@/features/client/pages/ClientDashboardPage
 import { HomePage } from '@/features/home/pages/HomePage'
 import { ProviderDashboardPage } from '@/features/provider/pages/ProviderDashboardPage'
 import { ProviderSetupPage } from '@/features/provider/pages/ProviderSetupPage'
+import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage'
+import { ProfessionalsPage } from '@/features/provider/pages/ProfessionalsPage'
+import { ServicesPage } from '@/features/provider/pages/ServicesPage'
+import { StoreSettingsPage } from "@/features/provider/pages/StoreSettingsPage"
+import { ProviderPublicProfilePage } from '@/features/provider/pages/ProviderPublicProfilePage'
+import { HowItWorksPage } from '@/features/home/pages/HowItWorksPage'
+import { CallOutsPage } from '@/features/home/pages/CallOutsPage'
+import { ForProfessionalsPage } from '@/features/home/pages/ForProfessionalsPage'
+
+
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +28,16 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <ClientDashboardPage /> },
       { path: 'provider', element: <ProviderDashboardPage /> },
       { path: 'provider/setup', element: <ProviderSetupPage /> },
+      { path: 'reset-password', element: <ResetPasswordPage /> },
+      { path: 'professionals', element: <ProfessionalsPage /> },
+      { path: 'provider/services', element: <ServicesPage /> },
+      { path:"provider/store", element:<StoreSettingsPage/> },
+      { path: "/professionals/:id", element: <ProviderPublicProfilePage />},
+      { path: 'how-it-works', element: <HowItWorksPage /> },
+      { path: 'call-outs', element: <CallOutsPage /> },
+      { path: 'for-professionals', element: <ForProfessionalsPage /> },
+
+
     ],
   },
 ])

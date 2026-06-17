@@ -1,16 +1,5 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
 export function SignupPage() {
@@ -27,7 +16,7 @@ export function SignupPage() {
     setError(null)
     setIsSubmitting(true)
 
-    const result = await signUp(email, password, 'client')
+    const result = await signUp(email, password)
 
     if (result.error) {
       setError(result.error)
@@ -35,65 +24,68 @@ export function SignupPage() {
       return
     }
 
-    navigate('/client')
+    navigate('/')
   }
 
   return (
-      <div className="mx-auto max-w-md">
-        <Card>
-          <CardHeader>
-            <CardTitle>Create your account</CardTitle>
-            <CardDescription>Join TopDeck to find or offer services</CardDescription>
-          </CardHeader>
-          <form onSubmit={(e) => void handleSubmit(e)}>
-            <CardContent className="space-y-4">
-              {error && (
-                  <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    {error}
-                  </div>
-              )}
+      <div className="flex min-h-[80vh] items-center justify-center px-6">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDECK</p>
+            <h1 className="mt-2 text-4xl font-black uppercase tracking-tight">CREATE ACCOUNT</h1>
+            <p className="mt-2 text-sm text-black/50">Join TopDeck to find or offer services.</p>
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                    autoComplete="email"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    autoComplete="new-password"
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating account...' : 'Create account'}
-              </Button>
-              <p className="text-center text-sm text-muted-foreground">
-                Already have an account?{' '}
-                <Link
-                    to="/login"
-                    className="font-medium text-foreground underline-offset-4 hover:underline"
-                >
-                  Sign in
-                </Link>
-              </p>
-            </CardFooter>
+          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6">
+            {error && (
+                <p className="border border-red-500 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-red-600">
+                  {error}
+                </p>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold tracking-[0.15em] uppercase">EMAIL</label>
+              <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  autoComplete="email"
+                  className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold tracking-[0.15em] uppercase">PASSWORD</label>
+              <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
+              />
+              <p className="text-xs text-black/40 tracking-wide">Minimum 6 characters.</p>
+            </div>
+
+            <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full border border-black bg-black py-3 text-xs font-bold tracking-[0.15em] uppercase text-white transition-colors hover:bg-white hover:text-black disabled:opacity-50"
+            >
+              {isSubmitting ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
+            </button>
+
+            <p className="text-center text-xs tracking-wide text-black/50">
+              Already have an account?{' '}
+              <Link to="/login" className="font-bold text-black underline-offset-4 hover:underline">
+                SIGN IN
+              </Link>
+            </p>
           </form>
-        </Card>
+        </div>
       </div>
   )
 }

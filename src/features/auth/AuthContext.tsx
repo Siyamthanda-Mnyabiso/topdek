@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js'
-import { supabase, type UserInsert } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { User } from '@/types/database'
 
 interface AuthContextValue {
@@ -102,13 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) return { error: error.message }
     if (!data.user) return { error: 'Signup failed. Please try again.' }
 
-    const { error: profileError } = await supabase.from('users').insert({
-      id: data.user.id,
-      email,
-      role: 'client',
-    } satisfies UserInsert)
-
-    if (profileError) return { error: profileError.message }
+    // Trigger handles the insert — wait briefly for it to complete
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     const userProfile = await fetchUserProfile(data.user.id)
     setProfile(userProfile)

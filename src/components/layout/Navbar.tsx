@@ -1,73 +1,129 @@
-import { Link, NavLink } from 'react-router-dom'
-import { LogOut, Layers } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { cn } from '@/lib/utils'
 
 export function Navbar() {
-  const { session, profile, signOut } = useAuth()
+    const { session, profile, signOut } = useAuth()
+    const { pathname } = useLocation()
+    const isHome = pathname === '/'
 
-  return (
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-              <Layers className="h-5 w-5" />
-              TopDeck
-            </Link>
+    const isLoggedIn = !!session
 
-            <nav className="hidden items-center gap-1 sm:flex">
-              <NavLink
-                  to="/"
-                  className={({ isActive }) =>
-                      cn(
-                          'rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent',
-                          isActive ? 'text-foreground' : 'text-muted-foreground',
-                      )
-                  }
-              >
-                Home
-              </NavLink>
+    const navItems = isLoggedIn
+        ? [
+            { to: '/', label: 'HOME' },
+            { to: '/professionals', label: 'PROFESSIONALS' },
+            { to: '/provider/services', label: 'SERVICES' },
+        ]
+        : [
+            { to: '/', label: 'HOME' },
+            { to: '/how-it-works', label: 'HOW IT WORKS' },
+            { to: '/call-outs', label: 'CALL-OUTS' },
+            { to: '/for-professionals', label: 'FOR PROFESSIONALS' },
+        ]
 
-              {session && (
-                  <NavLink
-                      to="/dashboard"
-                      className={({ isActive }) =>
-                          cn(
-                              'rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent',
-                              isActive ? 'text-foreground' : 'text-muted-foreground',
-                          )
-                      }
-                  >
-                    Dashboard
-                  </NavLink>
-              )}
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {session && profile ? (
-                <>
-                  <div className="hidden text-right sm:block">
-                    <p className="text-sm font-medium">{profile.email}</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => void signOut()}>
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                  </Button>
-                </>
-            ) : (
-                <>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/login">Login</Link>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <Link to="/signup">Sign up</Link>
-                  </Button>
-                </>
+    return (
+        <header
+            className={cn(
+                'z-50 border-b border-white/10',
+                isHome
+                    ? 'absolute top-0 left-0 right-0 bg-transparent'
+                    : 'sticky top-0 bg-white border-black',
             )}
-          </div>
-        </div>
-      </header>
-  )
+        >
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+
+                <Link
+                    to="/"
+                    className={cn(
+                        'text-sm font-black tracking-[0.2em] uppercase',
+                        isHome ? 'text-white' : 'text-black',
+                    )}
+                >
+                    TOPDECK
+                </Link>
+
+                <nav className="hidden items-center gap-8 sm:flex">
+                    {navItems.map(({ to, label }) => (
+                        <NavLink
+                            key={to}
+                            to={to}
+                            className={({ isActive }) =>
+                                cn(
+                                    'text-xs font-semibold tracking-[0.15em] uppercase transition-colors',
+                                    isHome
+                                        ? isActive ? 'text-white' : 'text-white/50 hover:text-white'
+                                        : isActive ? 'text-black' : 'text-black/50 hover:text-black',
+                                )
+                            }
+                        >
+                            {label}
+                        </NavLink>
+                    ))}
+                </nav>
+
+                <div className="flex items-center gap-4">
+                    {session && profile ? (
+                        <>
+              <span
+                  className={cn(
+                      'hidden text-xs font-medium tracking-wide sm:block',
+                      isHome ? 'text-white/60' : 'text-black/60',
+                  )}
+              >
+                {profile.email}
+              </span>
+
+                            <Link
+                                to="/dashboard"
+                                className={cn(
+                                    'border px-4 py-2 text-xs font-bold tracking-[0.1em] uppercase transition-colors',
+                                    isHome
+                                        ? 'border-white text-white hover:bg-white hover:text-black'
+                                        : 'border-black text-black hover:bg-black hover:text-white',
+                                )}
+                            >
+                                DASHBOARD
+                            </Link>
+
+                            <button
+                                onClick={() => void signOut()}
+                                className={cn(
+                                    'text-xs font-semibold tracking-wide uppercase transition-colors',
+                                    isHome ? 'text-white/50 hover:text-white' : 'text-black/50 hover:text-black',
+                                )}
+                            >
+                                LOGOUT
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                to="/login"
+                                className={cn(
+                                    'text-xs font-semibold tracking-[0.1em] uppercase transition-colors',
+                                    isHome ? 'text-white/70 hover:text-white' : 'text-black hover:text-black/60',
+                                )}
+                            >
+                                LOGIN
+                            </Link>
+
+                            <Link
+                                to="/signup"
+                                className={cn(
+                                    'border px-4 py-2 text-xs font-bold tracking-[0.1em] uppercase transition-colors',
+                                    isHome
+                                        ? 'border-white bg-transparent text-white hover:bg-white hover:text-black'
+                                        : 'border-black bg-black text-white hover:bg-white hover:text-black',
+                                )}
+                            >
+                                BOOK EXPERIENCE
+                            </Link>
+                        </>
+                    )}
+                </div>
+
+            </div>
+        </header>
+    )
 }
