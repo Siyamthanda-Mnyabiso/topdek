@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Store, Calendar, TrendingUp, MapPin, Sparkles, Users, Zap, Gift } from 'lucide-react'
+import { Store, Calendar, TrendingUp, MapPin, Check, Sparkles, Users, Zap, Gift } from 'lucide-react'
 
 const BENEFITS = [
     {
