@@ -31,6 +31,7 @@ export function Navbar() {
     const baseNavItems = [
         { to: '/', label: 'HOME' },
         { to: '/professionals', label: 'PROFESSIONALS' },
+        { to: '/my-bookings', label: 'MY BOOKINGS' },
         { to: '/provider/services', label: 'SERVICES' },
     ]
 
@@ -179,7 +180,7 @@ export function Navbar() {
             <div
                 className={cn(
                     'sm:hidden overflow-hidden bg-white border-t border-black transition-[max-height] duration-300 ease-in-out',
-                    menuOpen ? 'max-h-[40rem]' : 'max-h-0',
+                    menuOpen ? 'max-h-[44rem]' : 'max-h-0',
                 )}
             >
                 <nav className="flex flex-col px-4 py-2">
