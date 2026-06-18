@@ -151,7 +151,27 @@ export function StoreSettingsPage() {
 
         setSuccess(true)
         setSaving(false)
-        setTimeout(() => setSuccess(false), 3000)
+
+        setTimeout(() => {
+            setSuccess(false)
+            navigate('/') // 👈 REDIRECT TO HOME AFTER SAVE
+        }, 800) // small delay so user sees success message
+    }
+
+    // =========================
+    // FIXED SHARE LOGIC
+    // =========================
+    const shareLink = profile
+        ? `${window.location.origin}/professionals/${profile.id}`
+        : ''
+
+    const qrCode = shareLink
+        ? `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareLink)}`
+        : ''
+
+    function copyLink() {
+        if (!shareLink) return
+        navigator.clipboard.writeText(shareLink)
     }
 
     if (loading) {
@@ -349,6 +369,38 @@ export function StoreSettingsPage() {
                                 placeholder="+27 82 000 0000"
                                 className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
                             />
+                        </div>
+                    </div>
+                </div>
+
+                {/* SHARE */}
+                <div className="border border-black p-6 space-y-4">
+                    <h2 className="text-xs font-bold uppercase tracking-[0.2em]">
+                        SHARE YOUR STORE
+                    </h2>
+
+                    <p className="text-xs break-all">{shareLink}</p>
+
+                    <div className="flex gap-6 items-center">
+                        {qrCode && (
+                            <img
+                                src={qrCode}
+                                className="w-40 h-40 border"
+                                alt="QR Code"
+                            />
+                        )}
+
+                        <div className="space-y-3">
+                            <button
+                                onClick={copyLink}
+                                className="border px-4 py-2 text-xs font-bold uppercase"
+                            >
+                                COPY LINK
+                            </button>
+
+                            <p className="text-[10px] text-black/40">
+                                Share this link with clients
+                            </p>
                         </div>
                     </div>
                 </div>
