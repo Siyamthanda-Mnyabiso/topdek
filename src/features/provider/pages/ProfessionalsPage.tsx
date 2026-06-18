@@ -12,6 +12,7 @@ interface ProviderProfile {
     logo_url: string | null
     cover_image_url: string | null
     created_at: string
+    categories: string[] | null
 }
 
 const CATEGORIES = [
@@ -64,7 +65,16 @@ export function ProfessionalsPage() {
             pro.location?.toLowerCase().includes(search.toLowerCase()) ||
             pro.description?.toLowerCase().includes(search.toLowerCase())
 
-        return matchesSearch
+        // CATEGORY FILTER (FIXED)
+        const matchesCategory =
+            activeCategory === 'all'
+                ? true
+                : (pro.categories ?? []).some(
+                    (cat) =>
+                        cat.toLowerCase().replace(/\s/g, '-') === activeCategory
+                )
+
+        return matchesSearch && matchesCategory
     })
 
     function setCategory(cat: string) {
@@ -79,7 +89,7 @@ export function ProfessionalsPage() {
     return (
         <div className="bg-white min-h-screen">
 
-            {/* PAGE HEADER */}
+            {/* HEADER */}
             <div className="border-b border-black px-4 sm:px-6 md:px-12 lg:px-20 py-10 sm:py-16">
                 <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDEK</p>
                 <h1 className="mt-2 text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-tight">
@@ -110,8 +120,13 @@ export function ProfessionalsPage() {
                     <div className="relative -mx-4 sm:-mx-6 md:-mx-12 lg:-mx-20">
                         <div className="flex gap-2 overflow-x-auto px-4 sm:px-6 md:px-12 lg:px-20 pb-1 scrollbar-hide">
                             {CATEGORIES.map((cat) => {
-                                const slug = cat === 'All' ? 'all' : cat.toLowerCase().replace(/\s/g, '-')
+                                const slug =
+                                    cat === 'All'
+                                        ? 'all'
+                                        : cat.toLowerCase().replace(/\s/g, '-')
+
                                 const isActive = activeCategory === slug
+
                                 return (
                                     <button
                                         key={cat}
@@ -127,7 +142,7 @@ export function ProfessionalsPage() {
                                 )
                             })}
                         </div>
-                        {/* fade hint that more pills are scrollable, mobile only */}
+
                         <div className="sm:hidden pointer-events-none absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-white to-transparent" />
                     </div>
                 </div>
@@ -151,7 +166,9 @@ export function ProfessionalsPage() {
                 ) : filtered.length === 0 ? (
                     <div className="py-16 sm:py-24 text-center">
                         <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/30 px-4">
-                            {search ? `NO RESULTS FOR "${search.toUpperCase()}"` : 'NO PROFESSIONALS LISTED YET.'}
+                            {search
+                                ? `NO RESULTS FOR "${search.toUpperCase()}"`
+                                : 'NO PROFESSIONALS LISTED YET.'}
                         </p>
                         {search && (
                             <button
@@ -165,16 +182,20 @@ export function ProfessionalsPage() {
                 ) : (
                     <>
                         <p className="mb-6 sm:mb-8 text-xs font-semibold tracking-[0.2em] uppercase text-black/40">
-                            {filtered.length} PROFESSIONAL{filtered.length !== 1 ? 'S' : ''}
+                            {filtered.length} PROFESSIONAL
+                            {filtered.length !== 1 ? 'S' : ''}
                         </p>
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
                             {filtered.map((pro) => (
                                 <div
                                     key={pro.id}
-                                    onClick={() => navigate(`/professionals/${pro.id}`)}
+                                    onClick={() =>
+                                        navigate(`/professionals/${pro.id}`)
+                                    }
                                     className="group cursor-pointer border border-black hover:shadow-lg transition-shadow active:bg-black/[0.02]"
                                 >
-                                    {/* COVER IMAGE */}
+                                    {/* COVER */}
                                     <div className="relative h-40 sm:h-52 overflow-hidden bg-zinc-100">
                                         {pro.cover_image_url ? (
                                             <img
@@ -184,13 +205,12 @@ export function ProfessionalsPage() {
                                             />
                                         ) : (
                                             <div className="h-full w-full bg-zinc-900 flex items-end p-4">
-                        <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/30">
-                          NO PHOTO
-                        </span>
+                                                <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/30">
+                                                    NO PHOTO
+                                                </span>
                                             </div>
                                         )}
 
-                                        {/* LOGO */}
                                         {pro.logo_url && (
                                             <div className="absolute bottom-3 left-3 h-9 w-9 sm:h-10 sm:w-10 border-2 border-white overflow-hidden bg-white">
                                                 <img
@@ -207,20 +227,23 @@ export function ProfessionalsPage() {
                                         <h3 className="font-black uppercase tracking-tight text-base sm:text-lg leading-tight">
                                             {pro.business_name}
                                         </h3>
+
                                         {pro.location && (
                                             <p className="mt-1 text-xs tracking-[0.15em] uppercase text-black/40">
                                                 {pro.location}
                                             </p>
                                         )}
+
                                         {pro.description && (
                                             <p className="mt-3 text-sm text-black/60 line-clamp-2 leading-relaxed">
                                                 {pro.description}
                                             </p>
                                         )}
+
                                         <div className="mt-4 flex items-center justify-between">
-                      <span className="text-xs font-bold tracking-[0.15em] uppercase text-black/30 group-hover:text-black transition-colors">
-                        VIEW PROFILE →
-                      </span>
+                                            <span className="text-xs font-bold tracking-[0.15em] uppercase text-black/30 group-hover:text-black transition-colors">
+                                                VIEW PROFILE →
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

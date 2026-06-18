@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
 export function Navbar() {
@@ -9,15 +10,40 @@ export function Navbar() {
     const { pathname } = useLocation()
     const isHome = pathname === '/'
     const [menuOpen, setMenuOpen] = useState(false)
+    const [hasProviderProfile, setHasProviderProfile] = useState(false)
 
     const isLoggedIn = !!session
 
+    useEffect(() => {
+        async function checkProviderProfile() {
+            if (!profile) return
+            const { data } = await supabase
+                .from('provider_profiles')
+                .select('id')
+                .eq('user_id', profile.id)
+                .maybeSingle()
+            setHasProviderProfile(!!data)
+        }
+        void checkProviderProfile()
+    }, [profile])
+
+    // Base nav items for logged in users
+    const baseNavItems = [
+        { to: '/', label: 'HOME' },
+        { to: '/professionals', label: 'PROFESSIONALS' },
+        { to: '/provider/services', label: 'SERVICES' },
+    ]
+
+    // Provider-only nav items
+    const providerNavItems = [
+        { to: '/provider/bookings', label: 'BOOKINGS' },
+        { to: '/provider/availability', label: 'AVAILABILITY' },
+    ]
+
     const navItems = isLoggedIn
-        ? [
-            { to: '/', label: 'HOME' },
-            { to: '/professionals', label: 'PROFESSIONALS' },
-            { to: '/provider/services', label: 'SERVICES' },
-        ]
+        ? hasProviderProfile
+            ? [...baseNavItems, ...providerNavItems]
+            : baseNavItems
         : [
             { to: '/', label: 'HOME' },
             { to: '/how-it-works', label: 'HOW IT WORKS' },
@@ -153,7 +179,7 @@ export function Navbar() {
             <div
                 className={cn(
                     'sm:hidden overflow-hidden bg-white border-t border-black transition-[max-height] duration-300 ease-in-out',
-                    menuOpen ? 'max-h-[28rem]' : 'max-h-0',
+                    menuOpen ? 'max-h-[40rem]' : 'max-h-0',
                 )}
             >
                 <nav className="flex flex-col px-4 py-2">

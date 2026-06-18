@@ -1,6 +1,6 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { MapPin, Clock, ArrowLeft, Heart, Share2, Check, ImageOff, ChevronLeft, ChevronRight, X, Calendar } from 'lucide-react'
@@ -120,12 +120,125 @@ function BookingModal({
     const location = useLocation()
     const queryClient = useQueryClient()
 
-    const [date, setDate] = useState('')
-    const [time, setTime] = useState('')
+    const [selectedDate, setSelectedDate] = useState('')
+    const [selectedTime, setSelectedTime] = useState('')
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
+    const [availableSlots, setAvailableSlots] = useState<{date: string, times: string[]}[]>([])
+    const [loadingAvailability, setLoadingAvailability] = useState(true)
+    const [hasAvailability, setHasAvailability] = useState(false)
+    const [hasExistingBooking, setHasExistingBooking] = useState(false)
+    const [existingBookingStatus, setExistingBookingStatus] = useState<string | null>(null)
 
-    const today = new Date().toISOString().split('T')[0]
+    // Fetch all availability for this provider
+    useEffect(() => {
+        void fetchAllAvailability()
+        void checkExistingBooking()
+    }, [])
+
+    // Check if user already has a booking for this service
+    const checkExistingBooking = async () => {
+        if (!authProfile) return
+
+        try {
+            const { data, error } = await supabase
+                .from('bookings')
+                .select('status')
+                .eq('client_id', authProfile.id)
+                .eq('service_id', service.id)
+                .eq('provider_id', providerId)
+                .in('status', ['pending', 'accepted'])
+                .maybeSingle()
+
+            if (error) {
+                console.error('Error checking existing booking:', error)
+                return
+            }
+
+            if (data) {
+                setHasExistingBooking(true)
+                setExistingBookingStatus(data.status)
+            }
+        } catch (err) {
+            console.error('Error checking existing booking:', err)
+        }
+    }
+
+    const fetchAllAvailability = async () => {
+        setLoadingAvailability(true)
+        setError(null)
+
+        try {
+            console.log('Fetching availability for provider:', providerId)
+
+            // Get all availability slots for this provider
+            const { data: availabilityData, error: availabilityError } = await supabase
+                .from('provider_availability')
+                .select('*')
+                .eq('provider_profile_id', providerId)
+                .eq('is_available', true)
+                .gte('specific_date', new Date().toISOString().split('T')[0]) // Only future dates
+                .order('specific_date', { ascending: true })
+                .order('start_time', { ascending: true })
+
+            if (availabilityError) {
+                console.error('Availability error:', availabilityError)
+                setError(`Failed to load availability: ${availabilityError.message}`)
+                setLoadingAvailability(false)
+                return
+            }
+
+            console.log('Availability data:', availabilityData)
+
+            if (!availabilityData || availabilityData.length === 0) {
+                setHasAvailability(false)
+                setLoadingAvailability(false)
+                return
+            }
+
+            // Group by date
+            const groupedSlots: Record<string, string[]> = {}
+
+            for (const slot of availabilityData) {
+                const date = slot.specific_date
+                if (!groupedSlots[date]) {
+                    groupedSlots[date] = []
+                }
+
+                // Check if this time slot is already booked
+                const { data: bookingsData } = await supabase
+                    .from('bookings')
+                    .select('id')
+                    .eq('provider_id', providerId)
+                    .eq('booking_date', date)
+                    .eq('start_time', slot.start_time)
+                    .in('status', ['pending', 'accepted'])
+
+                if (!bookingsData || bookingsData.length === 0) {
+                    groupedSlots[date].push(slot.start_time)
+                }
+            }
+
+            // Convert to array and filter out dates with no available times
+            const slots = Object.entries(groupedSlots)
+                .filter(([_, times]) => times.length > 0)
+                .map(([date, times]) => ({
+                    date,
+                    times: times.sort()
+                }))
+
+            console.log('Available slots:', slots)
+
+            setAvailableSlots(slots)
+            setHasAvailability(slots.length > 0)
+
+        } catch (err) {
+            console.error('Error fetching availability:', err)
+            setError(err instanceof Error ? err.message : 'Failed to load availability')
+        } finally {
+            setLoadingAvailability(false)
+        }
+    }
 
     const createBooking = useMutation({
         mutationFn: async () => {
@@ -133,17 +246,44 @@ function BookingModal({
                 navigate('/login', { state: { from: location.pathname } })
                 throw new Error('not-authenticated')
             }
-            if (!date || !time) {
+            if (!selectedDate || !selectedTime) {
                 throw new Error('Please choose a date and time')
+            }
+
+            // Calculate end time based on duration
+            const [hours, minutes] = selectedTime.split(':').map(Number)
+            const startMinutes = hours * 60 + minutes
+            const endMinutes = startMinutes + service.duration
+            const endHours = Math.floor(endMinutes / 60)
+            const endMins = endMinutes % 60
+            const endTime = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`
+
+            // Double check that the slot is still available
+            const { data: existingBookings, error: checkError } = await supabase
+                .from('bookings')
+                .select('id')
+                .eq('provider_id', providerId)
+                .eq('booking_date', selectedDate)
+                .eq('start_time', selectedTime)
+                .in('status', ['pending', 'accepted'])
+
+            if (checkError) throw checkError
+
+            if (existingBookings && existingBookings.length > 0) {
+                throw new Error('This time slot is no longer available. Please choose another time.')
             }
 
             const { error } = await supabase.from('bookings').insert({
                 service_id: service.id,
                 provider_id: providerId,
                 client_id: authProfile.id,
-                booking_date: date,
-                booking_time: time,
+                service_name: service.title,
+                booking_date: selectedDate,
+                start_time: selectedTime,
+                end_time: endTime,
                 status: 'pending',
+                client_notes: null,
+                provider_notes: null,
             })
 
             if (error) throw error
@@ -160,13 +300,31 @@ function BookingModal({
         },
     })
 
+    if (loadingAvailability) {
+        return (
+            <div
+                className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4"
+                onClick={onClose}
+            >
+                <div className="w-full max-w-sm bg-white border border-black p-6">
+                    <div className="text-center">
+                        <div className="h-8 w-8 border-2 border-black border-t-transparent animate-spin mx-auto" />
+                        <p className="mt-3 text-xs font-semibold tracking-[0.2em] uppercase text-black/40">
+                            LOADING AVAILABILITY...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div
             className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4"
             onClick={onClose}
         >
             <div
-                className="w-full max-w-sm bg-white border border-black"
+                className="w-full max-w-sm bg-white border border-black max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between border-b border-black p-4">
@@ -183,7 +341,12 @@ function BookingModal({
                         <Check className="mx-auto h-8 w-8 mb-3" />
                         <p className="text-sm text-black/70">
                             Your request for <span className="font-bold">{service.title}</span> with{' '}
-                            {businessName} on {date} at {time} has been sent.
+                            {businessName} on {new Date(selectedDate).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                        })} at {selectedTime} has been sent.
                         </p>
                         <button
                             onClick={onClose}
@@ -209,38 +372,88 @@ function BookingModal({
                             </div>
                         )}
 
-                        <div>
-                            <label className="block text-xs font-semibold tracking-wide uppercase text-black/50 mb-1.5">
-                                Date
-                            </label>
-                            <input
-                                type="date"
-                                min={today}
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                className="w-full border border-black px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-black"
-                            />
-                        </div>
+                        {hasExistingBooking ? (
+                            <div className="border border-blue-200 bg-blue-50 p-6 text-center">
+                                <p className="text-sm text-blue-700 font-medium">
+                                    You have already booked this service!
+                                </p>
+                                <p className="mt-2 text-xs text-blue-600">
+                                    Your booking is currently <span className="font-bold uppercase">{existingBookingStatus}</span>.
+                                    {existingBookingStatus === 'pending' && ' Please wait for the provider to confirm.'}
+                                    {existingBookingStatus === 'accepted' && ' Your appointment has been confirmed!'}
+                                </p>
+                            </div>
+                        ) : !hasAvailability ? (
+                            <div className="border border-yellow-200 bg-yellow-50 p-6 text-center">
+                                <p className="text-sm text-yellow-700 font-medium">
+                                    Sorry, I'm not available at the moment.
+                                </p>
+                                <p className="mt-2 text-xs text-yellow-600">
+                                    But keep an eye open for when I am!
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                <div>
+                                    <label className="block text-xs font-semibold tracking-wide uppercase text-black/50 mb-2">
+                                        Available Dates
+                                    </label>
+                                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                                        {availableSlots.map((slot) => (
+                                            <div key={slot.date} className="border border-black/20 p-3">
+                                                <div className="text-sm font-bold uppercase mb-2">
+                                                    {new Date(slot.date).toLocaleDateString('en-US', {
+                                                        weekday: 'long',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        year: 'numeric'
+                                                    })}
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {slot.times.map((time) => (
+                                                        <button
+                                                            key={time}
+                                                            onClick={() => {
+                                                                setSelectedDate(slot.date)
+                                                                setSelectedTime(time)
+                                                                setError(null)
+                                                            }}
+                                                            className={`border px-3 py-2 text-sm font-medium transition-colors ${
+                                                                selectedDate === slot.date && selectedTime === time
+                                                                    ? 'border-black bg-black text-white'
+                                                                    : 'border-black/20 hover:border-black'
+                                                            }`}
+                                                        >
+                                                            {time}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
 
-                        <div>
-                            <label className="block text-xs font-semibold tracking-wide uppercase text-black/50 mb-1.5">
-                                Time
-                            </label>
-                            <input
-                                type="time"
-                                value={time}
-                                onChange={(e) => setTime(e.target.value)}
-                                className="w-full border border-black px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-black"
-                            />
-                        </div>
+                                {selectedDate && selectedTime && (
+                                    <div className="border border-green-200 bg-green-50 p-3">
+                                        <p className="text-xs text-green-700">
+                                            Selected: {new Date(selectedDate).toLocaleDateString('en-US', {
+                                            weekday: 'short',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })} at {selectedTime}
+                                        </p>
+                                    </div>
+                                )}
 
-                        <button
-                            onClick={() => createBooking.mutate()}
-                            disabled={createBooking.isPending}
-                            className="w-full border border-black bg-black py-3 text-xs font-bold tracking-[0.15em] uppercase text-white transition-colors hover:bg-white hover:text-black disabled:opacity-50"
-                        >
-                            {createBooking.isPending ? 'BOOKING...' : 'CONFIRM BOOKING'}
-                        </button>
+                                <button
+                                    onClick={() => createBooking.mutate()}
+                                    disabled={createBooking.isPending || !selectedDate || !selectedTime}
+                                    className="w-full border border-black bg-black py-3 text-xs font-bold tracking-[0.15em] uppercase text-white transition-colors hover:bg-white hover:text-black disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {createBooking.isPending ? 'BOOKING...' : 'CONFIRM BOOKING'}
+                                </button>
+                            </>
+                        )}
                     </div>
                 )}
             </div>

@@ -13,6 +13,17 @@ interface StoreForm {
     cover_image_url: string
 }
 
+const CATEGORIES = [
+    'Barbers',
+    'Hair Stylists',
+    'Beard Grooming',
+    'Braiders',
+    'Nail Techs',
+    'Makeup Artists',
+    'Lash Techs',
+    'Skincare',
+]
+
 export function StoreSettingsPage() {
     const { profile } = useAuth()
     const navigate = useNavigate()
@@ -31,6 +42,8 @@ export function StoreSettingsPage() {
         logo_url: '',
         cover_image_url: '',
     })
+
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
 
     const [coverPreview, setCoverPreview] = useState<string | null>(null)
     const [logoPreview, setLogoPreview] = useState<string | null>(null)
@@ -71,6 +84,7 @@ export function StoreSettingsPage() {
         setCoverPreview(data.cover_image_url ?? null)
         setLogoPreview(data.logo_url ?? null)
         setLoading(false)
+        setSelectedCategories(data.categories ?? [])
     }
 
     async function uploadImage(
@@ -140,7 +154,10 @@ export function StoreSettingsPage() {
 
         const { error } = await supabase
             .from('provider_profiles')
-            .update(form)
+            .update({
+                ...form,
+                categories: selectedCategories,
+            })
             .eq('user_id', profile.id)
 
         if (error) {
@@ -154,13 +171,10 @@ export function StoreSettingsPage() {
 
         setTimeout(() => {
             setSuccess(false)
-            navigate('/') // 👈 REDIRECT TO HOME AFTER SAVE
-        }, 800) // small delay so user sees success message
+            navigate('/')
+        }, 800)
     }
 
-    // =========================
-    // FIXED SHARE LOGIC
-    // =========================
     const shareLink = profile
         ? `${window.location.origin}/professionals/${profile.id}`
         : ''
@@ -370,6 +384,40 @@ export function StoreSettingsPage() {
                                 className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
                             />
                         </div>
+                    </div>
+                </div>
+
+                {/* CATEGORY SELECT */}
+                <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase text-black/40 tracking-[0.2em]">
+                        CATEGORIES
+                    </label>
+
+                    <div className="flex flex-wrap gap-2">
+                        {CATEGORIES.map((cat) => {
+                            const active = selectedCategories.includes(cat)
+
+                            return (
+                                <button
+                                    key={cat}
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedCategories((prev) =>
+                                            active
+                                                ? prev.filter((c) => c !== cat)
+                                                : [...prev, cat]
+                                        )
+                                    }}
+                                    className={`border px-3 py-1.5 text-xs font-bold uppercase tracking-[0.1em] ${
+                                        active
+                                            ? 'bg-black text-white border-black'
+                                            : 'border-black/30 text-black/50'
+                                    }`}
+                                >
+                                    {cat}
+                                </button>
+                            )
+                        })}
                     </div>
                 </div>
 

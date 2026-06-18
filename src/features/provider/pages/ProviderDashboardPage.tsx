@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Building2, Package, Settings, Eye } from 'lucide-react'
+import { Building2, Package, Settings, Eye, Clock, Users } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { ShareStoreCard } from '@/features/provider/components/ShareStoreCard'
@@ -46,6 +46,40 @@ export function ProviderDashboardPage() {
         </div>
 
         <div className="px-6 md:px-12 lg:px-20 py-12 space-y-4 max-w-2xl">
+
+          {/* BOOKINGS */}
+          <div className="border border-black p-6 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Users className="h-5 w-5" />
+              <div>
+                <h2 className="font-black uppercase tracking-tight">BOOKINGS</h2>
+                <p className="text-xs text-black/40 mt-0.5">Manage client bookings</p>
+              </div>
+            </div>
+            <Link
+                to="/provider/bookings"
+                className="border border-black px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
+            >
+              VIEW
+            </Link>
+          </div>
+
+          {/* AVAILABILITY */}
+          <div className="border border-black p-6 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Clock className="h-5 w-5" />
+              <div>
+                <h2 className="font-black uppercase tracking-tight">AVAILABILITY</h2>
+                <p className="text-xs text-black/40 mt-0.5">Set your working hours</p>
+              </div>
+            </div>
+            <Link
+                to="/provider/availability"
+                className="border border-black px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
+            >
+              MANAGE
+            </Link>
+          </div>
 
           {/* STORE */}
           <div className="border border-black p-6 flex items-center justify-between">

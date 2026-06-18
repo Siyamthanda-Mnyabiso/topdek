@@ -14,6 +14,8 @@ import { ProviderPublicProfilePage } from '@/features/provider/pages/ProviderPub
 import { HowItWorksPage } from '@/features/home/pages/HowItWorksPage'
 import { CallOutsPage } from '@/features/home/pages/CallOutsPage'
 import { ForProfessionalsPage } from '@/features/home/pages/ForProfessionalsPage'
+import { AvailabilityPage } from '@/features/provider/pages/AvailabilityPage'
+import { BookingsPage } from '@/features/provider/pages/BookingsPage'
 
 
 
@@ -36,6 +38,8 @@ export const router = createBrowserRouter([
       { path: 'how-it-works', element: <HowItWorksPage /> },
       { path: 'call-outs', element: <CallOutsPage /> },
       { path: 'for-professionals', element: <ForProfessionalsPage /> },
+      { path: 'provider/availability', element: <AvailabilityPage /> },
+      { path: 'provider/bookings', element: <BookingsPage /> },
 
 
     ],

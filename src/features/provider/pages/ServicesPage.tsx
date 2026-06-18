@@ -51,9 +51,6 @@ const initialFormData: ServiceFormData = {
     category: ''
 }
 
-// One slot in the image picker: either an already-saved image (has `id`),
-// a freshly picked file waiting to upload (has `file` + local preview url),
-// or empty.
 interface ImageSlot {
     id: string | null
     file: File | null
@@ -187,8 +184,6 @@ export function ServicesPage() {
         return true
     }, [formData])
 
-    // Uploads any new files in imageSlots to storage, returns the final
-    // ordered list of public URLs (mix of existing + newly uploaded).
     const uploadImageSlots = useCallback(async (providerIdForPath: string): Promise<string[]> => {
         const urls: string[] = []
 
@@ -201,12 +196,14 @@ export function ServicesPage() {
                     .from('service-images')
                     .upload(fileName, slot.file, { upsert: false })
 
-                if (uploadError) throw uploadError
+                if (uploadError) {
+                    console.error('Upload error:', uploadError)
+                    throw new Error(`Failed to upload image: ${uploadError.message}`)
+                }
 
                 const { data } = supabase.storage.from('service-images').getPublicUrl(fileName)
                 urls.push(data.publicUrl)
             } else if (slot.previewUrl && slot.id) {
-                // Existing saved image kept as-is
                 urls.push(slot.previewUrl)
             }
         }
@@ -215,14 +212,24 @@ export function ServicesPage() {
     }, [imageSlots])
 
     const saveService = useCallback(async () => {
-        if (!providerId) return
+        if (!providerId) {
+            setError('Provider ID not found')
+            return
+        }
         if (!validateForm()) return
 
         setIsSubmitting(true)
         setError(null)
 
         try {
-            const imageUrls = await uploadImageSlots(providerId)
+            // Upload images first
+            let imageUrls: string[] = []
+            try {
+                imageUrls = await uploadImageSlots(providerId)
+            } catch (uploadErr) {
+                throw new Error(`Image upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}`)
+            }
+
             const coverImageUrl = imageUrls[0] ?? null
 
             const serviceData = {
@@ -231,38 +238,45 @@ export function ServicesPage() {
                 price: Number(formData.price),
                 duration: Number(formData.duration),
                 category: formData.category || null,
-                image_url: coverImageUrl, // kept as a quick "cover" fallback
+                image_url: coverImageUrl,
+                is_active: true,
             }
 
             let serviceId = editingId
 
             if (editingId) {
-                const { error } = await supabase
+                const { error: updateError } = await supabase
                     .from('services')
                     .update(serviceData)
                     .eq('id', editingId)
 
-                if (error) throw error
+                if (updateError) {
+                    console.error('Update error:', updateError)
+                    throw new Error(`Failed to update service: ${updateError.message}`)
+                }
 
-                // Replace the full gallery: simplest correct approach given
-                // slots can be reordered/removed/replaced freely in the UI.
                 const { error: deleteImagesError } = await supabase
                     .from('service_images')
                     .delete()
                     .eq('service_id', editingId)
-                if (deleteImagesError) throw deleteImagesError
+
+                if (deleteImagesError) {
+                    console.error('Delete images error:', deleteImagesError)
+                }
             } else {
-                const { data, error } = await supabase
+                const { data, error: insertError } = await supabase
                     .from('services')
                     .insert({
                         ...serviceData,
                         provider_id: providerId,
-                        is_active: true,
                     })
                     .select('id')
                     .single()
 
-                if (error) throw error
+                if (insertError) {
+                    console.error('Insert error:', insertError)
+                    throw new Error(`Failed to create service: ${insertError.message}`)
+                }
                 serviceId = data.id
             }
 
@@ -275,13 +289,20 @@ export function ServicesPage() {
                 const { error: insertImagesError } = await supabase
                     .from('service_images')
                     .insert(rows)
-                if (insertImagesError) throw insertImagesError
+
+                if (insertImagesError) {
+                    console.error('Insert images error:', insertImagesError)
+                    // Don't throw here - service was created but images failed
+                    setError('Service saved but some images could not be saved')
+                }
             }
 
             resetForm()
             await fetchServices(providerId)
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to save service')
+            const errorMessage = err instanceof Error ? err.message : 'Failed to save service'
+            setError(errorMessage)
+            console.error('Save service error:', err)
         } finally {
             setIsSubmitting(false)
         }
@@ -315,7 +336,6 @@ export function ServicesPage() {
         })
         setError(null)
 
-        // Load this service's existing gallery into the slots
         try {
             const { data, error } = await supabase
                 .from('service_images')
@@ -380,7 +400,6 @@ export function ServicesPage() {
                             </h2>
 
                             <div className="space-y-4">
-                                {/* Image slots */}
                                 <div>
                                     <label className="block text-xs font-medium text-zinc-500 mb-1.5">
                                         Service Images (up to {MAX_IMAGES})
