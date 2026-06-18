@@ -1,33 +1,55 @@
 import { Link } from 'react-router-dom'
-import { Store, Calendar, TrendingUp, MapPin, Check } from 'lucide-react'
+import { Store, Calendar, TrendingUp, MapPin, Sparkles, Users, Zap, Gift } from 'lucide-react'
 
 const BENEFITS = [
     {
+        icon: Sparkles,
+        title: 'COMPLETELY FREE',
+        description: 'List your services, manage bookings, and grow your business at no cost. No hidden fees, no commissions.',
+    },
+    {
         icon: Store,
         title: 'YOUR OWN STORE PAGE',
-        description: 'A professional profile clients find when browsing the marketplace.',
+        description: 'A professional profile clients find when browsing the marketplace — completely free to create.',
     },
     {
         icon: Calendar,
         title: 'MANAGE BOOKINGS',
-        description: 'Accept appointments and call-outs in one simple dashboard.',
+        description: 'Accept appointments and call-outs in one simple dashboard. Free for life.',
     },
     {
         icon: MapPin,
         title: 'OFFER CALL-OUTS',
-        description: 'Travel to clients and charge for the convenience — your call.',
+        description: 'Travel to clients and charge for the convenience — your call, your rates.',
     },
     {
         icon: TrendingUp,
         title: 'GET DISCOVERED',
-        description: 'Appear in search results and category pages across the platform.',
+        description: 'Appear in search results and category pages. No paid placements needed.',
+    },
+    {
+        icon: Users,
+        title: 'GROW YOUR CLIENT BASE',
+        description: 'Connect with clients actively looking for beauty and grooming services in your area.',
     },
 ]
 
-const PLANS = [
-    { name: 'BASIC', price: 'R299', features: ['Listed on marketplace', 'Up to 5 services', 'Client bookings'] },
-    { name: 'PRO', price: 'R599', features: ['Unlimited services', 'Featured placement', 'Priority support'], highlighted: true },
-    { name: 'ELITE', price: 'R999', features: ['Top search results', 'Verified badge', 'Dedicated support'] },
+const FEATURES = [
+    {
+        icon: Zap,
+        title: 'ZERO SETUP FEES',
+        description: 'No credit card required. Start immediately.',
+    },
+    {
+        icon: Gift,
+        title: 'NO COMMISSIONS',
+        description: 'You keep 100% of what you earn. Every time.',
+    },
+    {
+        icon: Users,
+        title: 'UNLIMITED CLIENTS',
+        description: 'No cap on how many clients you can serve.',
+    },
 ]
 
 export function ForProfessionalsPage() {
@@ -51,74 +73,79 @@ export function ForProfessionalsPage() {
                     </h1>
                     <p className="mt-4 text-sm md:text-base text-white/60 max-w-md tracking-wide">
                         List your services, accept walk-ins or call-outs, and get discovered by clients
-                        ready to book.
+                        ready to book — all completely free.
                     </p>
                     <Link
                         to="/signup"
                         className="mt-8 w-fit border border-white bg-white px-6 py-3 text-xs font-bold tracking-[0.15em] uppercase text-black transition-colors hover:bg-transparent hover:text-white"
                     >
-                        CREATE YOUR STORE
+                        CREATE YOUR STORE — FREE
                     </Link>
                 </div>
             </section>
 
-            {/* BENEFITS */}
+            {/* BENEFITS - WHY LIST ON TOPDEK */}
             <section className="px-6 md:px-12 lg:px-20 py-16 md:py-24 border-b border-black">
-                <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-12">
-                    WHY LIST ON TOPDEK
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px border border-black">
-                    {BENEFITS.map((benefit, i) => (
-                        <div
-                            key={benefit.title}
-                            className={`p-8 ${
-                                i < BENEFITS.length - 1 ? 'border-b sm:border-b-0 sm:border-r border-black' : ''
-                            }`}
-                        >
-                            <benefit.icon className="h-7 w-7 mb-4" />
-                            <h3 className="font-black uppercase tracking-tight text-sm">{benefit.title}</h3>
-                            <p className="mt-2 text-sm text-black/60 leading-relaxed">{benefit.description}</p>
-                        </div>
-                    ))}
+                <div className="max-w-7xl mx-auto">
+                    <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-4">
+                        WHY LIST ON TOPDEK
+                    </h2>
+                    <p className="text-sm text-black/50 mb-12 max-w-md">
+                        Join hundreds of professionals using TOPDEK to grow their business — at no cost.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px border border-black">
+                        {BENEFITS.map((benefit, i) => (
+                            <div
+                                key={benefit.title}
+                                className={`p-6 ${
+                                    i < BENEFITS.length - 1 && i % 2 !== 0 ? 'border-b sm:border-b-0 sm:border-r border-black' : ''
+                                } ${i < BENEFITS.length - 1 ? 'border-b sm:border-b-0 sm:border-r border-black' : ''}`}
+                            >
+                                <benefit.icon className="h-7 w-7 mb-4" />
+                                <h3 className="font-black uppercase tracking-tight text-sm">{benefit.title}</h3>
+                                <p className="mt-2 text-sm text-black/60 leading-relaxed">{benefit.description}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Free Features Highlights */}
+                    <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {FEATURES.map((feature) => (
+                            <div key={feature.title} className="border border-black/20 p-6 text-center">
+                                <feature.icon className="h-8 w-8 mx-auto mb-3" />
+                                <h4 className="font-black uppercase tracking-tight text-sm">{feature.title}</h4>
+                                <p className="mt-2 text-sm text-black/60">{feature.description}</p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
-            {/* PRICING TEASER */}
-            <section className="px-6 md:px-12 lg:px-20 py-16 md:py-24">
-                <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-3">
-                    SIMPLE PRICING
-                </h2>
-                <p className="text-sm text-black/50 mb-12 max-w-md">
-                    Choose a plan when you set up your store. Cancel anytime.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {PLANS.map((plan) => (
-                        <div
-                            key={plan.name}
-                            className={`border p-6 ${
-                                plan.highlighted ? 'border-black bg-black text-white' : 'border-black/20'
-                            }`}
-                        >
-                            <h3 className="font-black uppercase tracking-tight text-lg">{plan.name}</h3>
-                            <div className="mt-4 mb-6">
-                                <span className="text-3xl font-black">{plan.price}</span>
-                                <span className={`text-xs ${plan.highlighted ? 'text-white/60' : 'text-black/50'}`}>
-                  /month
-                </span>
-                            </div>
-                            <ul className="space-y-2">
-                                {plan.features.map((feature) => (
-                                    <li key={feature} className="flex items-start gap-2 text-sm">
-                                        <Check className="h-4 w-4 mt-0.5 shrink-0" />
-                                        <span className={plan.highlighted ? 'text-white/80' : 'text-black/70'}>
-                      {feature}
-                    </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
+            {/* FREE FOREVER SECTION */}
+            <section className="px-6 md:px-12 lg:px-20 py-16 md:py-20 border-b border-black">
+                <div className="max-w-3xl mx-auto text-center">
+                    <Sparkles className="h-10 w-10 mx-auto mb-4" />
+                    <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">
+                        FREE FOREVER
+                    </h2>
+                    <p className="mt-4 text-sm text-black/50 max-w-md mx-auto">
+                        No subscription fees. No hidden charges. Just a simple platform to help you grow your business.
+                    </p>
+                    <div className="mt-8 flex flex-wrap justify-center gap-4">
+                        <span className="border border-black px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
+                            ✓ No Setup Fees
+                        </span>
+                        <span className="border border-black px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
+                            ✓ No Commissions
+                        </span>
+                        <span className="border border-black px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
+                            ✓ No Credit Card
+                        </span>
+                        <span className="border border-black px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
+                            ✓ Cancel Anytime
+                        </span>
+                    </div>
                 </div>
             </section>
 
@@ -127,11 +154,14 @@ export function ForProfessionalsPage() {
                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">
                     READY TO GET BOOKED?
                 </h2>
+                <p className="mt-4 text-sm text-white/50 max-w-md mx-auto">
+                    Start growing your client base today — completely free.
+                </p>
                 <Link
                     to="/signup"
                     className="mt-8 inline-block border border-white px-8 py-3 text-xs font-bold tracking-[0.2em] uppercase text-white transition-colors hover:bg-white hover:text-black"
                 >
-                    CREATE YOUR STORE
+                    CREATE YOUR STORE — FREE
                 </Link>
             </section>
         </div>
