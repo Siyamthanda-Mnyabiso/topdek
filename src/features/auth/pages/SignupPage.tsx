@@ -49,7 +49,7 @@ export function SignupPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="Enter your email address"
                   required
                   autoComplete="email"
                   className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
