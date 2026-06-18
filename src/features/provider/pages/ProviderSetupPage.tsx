@@ -3,61 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { supabase, type ProviderProfileInsert } from '@/lib/supabase'
-import { Check, Store, CreditCard, ArrowRight } from 'lucide-react'
+import { Store } from 'lucide-react'
 
-const PLANS = [
-  {
-    id: 'basic',
-    name: 'BASIC',
-    price: 'R299',
-    period: '/month',
-    description: 'Perfect for getting started',
-    features: [
-      'Listed on the marketplace',
-      'Up to 5 services',
-      'Client bookings',
-      'Basic profile page',
-    ],
-  },
-  {
-    id: 'pro',
-    name: 'PRO',
-    price: 'R599',
-    period: '/month',
-    description: 'For serious professionals',
-    features: [
-      'Everything in Basic',
-      'Unlimited services',
-      'Featured placement',
-      'Priority support',
-      'Analytics dashboard',
-    ],
-    highlighted: true,
-  },
-  {
-    id: 'elite',
-    name: 'ELITE',
-    price: 'R999',
-    period: '/month',
-    description: 'Maximum visibility',
-    features: [
-      'Everything in Pro',
-      'Top of search results',
-      'Dedicated account manager',
-      'Custom profile URL',
-      'Verified badge',
-    ],
-  },
-]
-
-type Step = 'store' | 'subscription' | 'done'
+type Step = 'store' | 'done'
 
 export function ProviderSetupPage() {
   const { profile } = useAuth()
   const navigate = useNavigate()
 
   const [step, setStep] = useState<Step>('store')
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
 
   const [businessName, setBusinessName] = useState('')
   const [description, setDescription] = useState('')
@@ -80,7 +34,7 @@ export function ProviderSetupPage() {
       if (insertError) throw insertError
     },
     onSuccess: () => {
-      setStep('subscription')
+      setStep('done')
     },
     onError: (err: Error) => {
       setError(err.message)
@@ -93,16 +47,14 @@ export function ProviderSetupPage() {
     createProfile.mutate()
   }
 
-  function handleSubscribe() {
-    // TODO: wire up Stripe or PayFast here
-    // For now just navigate to provider dashboard
+  function handleFinish() {
+    // redirect straight to provider dashboard (services page)
     navigate('/provider')
   }
 
-  // ── STEP INDICATOR ──
+  // ── STEP INDICATOR (UPDATED) ──
   const steps = [
     { id: 'store', label: 'YOUR STORE', icon: Store },
-    { id: 'subscription', label: 'SUBSCRIPTION', icon: CreditCard },
   ]
 
   return (
@@ -115,36 +67,19 @@ export function ProviderSetupPage() {
             BECOME A PROVIDER
           </h1>
           <p className="mt-3 text-sm text-black/50 tracking-wide">
-            Set up your store and choose a plan to appear on the marketplace.
+            Set up your store to start receiving clients.
           </p>
 
           {/* STEP INDICATOR */}
           <div className="mt-8 flex items-center gap-0">
-            {steps.map((s, i) => {
-              const isComplete = step === 'subscription' && s.id === 'store'
-              const isActive = step === s.id
-              return (
-                  <div key={s.id} className="flex items-center">
-                    <div className={`flex items-center gap-2 px-4 py-2 border text-xs font-bold tracking-[0.15em] uppercase transition-colors ${
-                        isComplete
-                            ? 'border-black bg-black text-white'
-                            : isActive
-                                ? 'border-black bg-white text-black'
-                                : 'border-black/20 text-black/30'
-                    }`}>
-                      {isComplete ? (
-                          <Check className="h-3.5 w-3.5" />
-                      ) : (
-                          <span className="text-xs">{i + 1}</span>
-                      )}
-                      {s.label}
-                    </div>
-                    {i < steps.length - 1 && (
-                        <ArrowRight className="h-4 w-4 text-black/20 mx-2" />
-                    )}
+            {steps.map((s) => (
+                <div key={s.id} className="flex items-center">
+                  <div className="flex items-center gap-2 px-4 py-2 border text-xs font-bold tracking-[0.15em] uppercase border-black bg-white text-black">
+                    <span className="text-xs">1</span>
+                    {s.label}
                   </div>
-              )
-            })}
+                </div>
+            ))}
           </div>
         </div>
 
@@ -224,103 +159,28 @@ export function ProviderSetupPage() {
                     disabled={createProfile.isPending || !businessName.trim()}
                     className="w-full border border-black bg-black py-3 text-xs font-bold tracking-[0.15em] uppercase text-white transition-colors hover:bg-white hover:text-black disabled:opacity-50"
                 >
-                  {createProfile.isPending ? 'CREATING STORE...' : 'CONTINUE TO SUBSCRIPTION →'}
+                  {createProfile.isPending ? 'CREATING STORE...' : 'CREATE STORE →'}
                 </button>
               </form>
           )}
 
-          {/* ── STEP 2: SUBSCRIPTION ── */}
-          {step === 'subscription' && (
-              <div className="space-y-8">
-                <div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight">CHOOSE YOUR PLAN</h2>
-                  <p className="mt-1 text-sm text-black/50">
-                    Select a plan to appear on the marketplace. Cancel anytime.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {PLANS.map((plan) => (
-                      <div
-                          key={plan.id}
-                          onClick={() => setSelectedPlan(plan.id)}
-                          className={`cursor-pointer border p-6 transition-colors relative ${
-                              selectedPlan === plan.id
-                                  ? 'border-black bg-black text-white'
-                                  : plan.highlighted
-                                      ? 'border-black'
-                                      : 'border-black/20 hover:border-black'
-                          }`}
-                      >
-                        {plan.highlighted && selectedPlan !== plan.id && (
-                            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white text-xs font-bold tracking-[0.15em] uppercase px-3 py-1">
-                      POPULAR
-                    </span>
-                        )}
-
-                        <div className="mb-4">
-                          <h3 className="font-black uppercase tracking-tight text-lg">{plan.name}</h3>
-                          <p className={`text-xs uppercase tracking-widest mt-0.5 ${
-                              selectedPlan === plan.id ? 'text-white/60' : 'text-black/40'
-                          }`}>
-                            {plan.description}
-                          </p>
-                        </div>
-
-                        <div className="mb-6">
-                          <span className="text-3xl font-black">{plan.price}</span>
-                          <span className={`text-xs ${
-                              selectedPlan === plan.id ? 'text-white/60' : 'text-black/50'
-                          }`}>
-                      {plan.period}
-                    </span>
-                        </div>
-
-                        <ul className="space-y-2">
-                          {plan.features.map((feature) => (
-                              <li key={feature} className="flex items-start gap-2 text-sm">
-                                <Check className={`h-4 w-4 mt-0.5 shrink-0 ${
-                                    selectedPlan === plan.id ? 'text-white' : 'text-black'
-                                }`} />
-                                <span className={selectedPlan === plan.id ? 'text-white/80' : 'text-black/70'}>
-                          {feature}
-                        </span>
-                              </li>
-                          ))}
-                        </ul>
-
-                        {selectedPlan === plan.id && (
-                            <div className="mt-4 pt-4 border-t border-white/20">
-                              <p className="text-xs font-bold tracking-[0.15em] uppercase text-white/80">
-                                ✓ SELECTED
-                              </p>
-                            </div>
-                        )}
-                      </div>
-                  ))}
-                </div>
-
-                <div className="flex gap-4 max-w-sm">
-                  <button
-                      onClick={handleSubscribe}
-                      disabled={!selectedPlan}
-                      className="flex-1 border border-black bg-black py-3 text-xs font-bold tracking-[0.15em] uppercase text-white transition-colors hover:bg-white hover:text-black disabled:opacity-30 disabled:cursor-not-allowed"
-                  >
-                    {selectedPlan ? `SUBSCRIBE TO ${PLANS.find(p => p.id === selectedPlan)?.name}` : 'SELECT A PLAN'}
-                  </button>
-                  <button
-                      onClick={() => navigate('/provider')}
-                      className="border border-black/20 px-4 py-3 text-xs font-bold tracking-[0.15em] uppercase text-black/40 transition-colors hover:border-black hover:text-black"
-                  >
-                    SKIP
-                  </button>
-                </div>
-
-                <p className="text-xs text-black/30 tracking-wide">
-                  Payment integration coming soon. Clicking subscribe will take you to your dashboard.
+          {/* ── STEP DONE ── */}
+          {step === 'done' && (
+              <div className="space-y-6 max-w-lg">
+                <h2 className="text-2xl font-black uppercase">STORE CREATED</h2>
+                <p className="text-sm text-black/50">
+                  Your profile is now live. Next step: add your services.
                 </p>
+
+                <button
+                    onClick={handleFinish}
+                    className="w-full border border-black bg-black py-3 text-xs font-bold tracking-[0.15em] uppercase text-white hover:bg-white hover:text-black"
+                >
+                  CONTINUE TO SERVICES →
+                </button>
               </div>
           )}
+
         </div>
       </div>
   )
