@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Store, Calendar, TrendingUp, MapPin , Sparkles, Users, Zap, Gift } from 'lucide-react'
+import { Store, Calendar, TrendingUp, MapPin, Sparkles, Users, Zap, Gift } from 'lucide-react'
 
 const BENEFITS = [
     {
@@ -121,8 +121,6 @@ export function ForProfessionalsPage() {
                     </div>
                 </div>
             </section>
-
-            
 
             {/* CTA */}
             <section className="bg-black text-white text-center py-20 px-6">
