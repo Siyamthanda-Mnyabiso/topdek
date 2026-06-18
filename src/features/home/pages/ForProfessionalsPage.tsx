@@ -122,32 +122,7 @@ export function ForProfessionalsPage() {
                 </div>
             </section>
 
-            {/* FREE FOREVER SECTION */}
-            <section className="px-6 md:px-12 lg:px-20 py-16 md:py-20 border-b border-black">
-                <div className="max-w-3xl mx-auto text-center">
-                    <Sparkles className="h-10 w-10 mx-auto mb-4" />
-                    <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">
-                        FREE FOREVER
-                    </h2>
-                    <p className="mt-4 text-sm text-black/50 max-w-md mx-auto">
-                        No subscription fees. No hidden charges. Just a simple platform to help you grow your business.
-                    </p>
-                    <div className="mt-8 flex flex-wrap justify-center gap-4">
-                        <span className="border border-black px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
-                            ✓ No Setup Fees
-                        </span>
-                        <span className="border border-black px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
-                            ✓ No Commissions
-                        </span>
-                        <span className="border border-black px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
-                            ✓ No Credit Card
-                        </span>
-                        <span className="border border-black px-4 py-2 text-xs font-bold uppercase tracking-[0.15em]">
-                            ✓ Cancel Anytime
-                        </span>
-                    </div>
-                </div>
-            </section>
+            
 
             {/* CTA */}
             <section className="bg-black text-white text-center py-20 px-6">
