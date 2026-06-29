@@ -8,7 +8,7 @@ const TICKER_ITEMS = [
   'PREMIUM GROOMING',
   'SALON EXPERIENCE',
   'BARBERS',
-  'CAPE TOWN',
+  'Massage Therapists',
   'NAIL TECHS',
   'BRAIDERS',
   'MAKEUP ARTISTS',
@@ -23,6 +23,7 @@ const SERVICE_CATEGORIES = [
   'Makeup Artists',
   'Lash Techs',
   'Skincare',
+  'Massage Therapists',
 ]
 
 interface Professional {

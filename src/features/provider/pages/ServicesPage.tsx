@@ -38,6 +38,7 @@ const CATEGORIES = [
     'Makeup',
     'Lashes',
     'Skincare',
+    'Massage Therapists',
     'Other',
 ]
 

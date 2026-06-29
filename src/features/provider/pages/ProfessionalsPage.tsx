@@ -25,6 +25,7 @@ const CATEGORIES = [
     'Makeup Artists',
     'Lash Techs',
     'Skincare',
+    'Massage Therapists',
 ]
 
 export function ProfessionalsPage() {
