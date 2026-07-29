@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { notifyUser } from '@/lib/notifications'
 import { Check, X, Clock, User, Calendar, MessageCircle, Pencil, Save, XCircle } from 'lucide-react'
 
 interface Booking {
@@ -113,6 +114,14 @@ export function BookingsPage() {
                 : booking
         ))
 
+        const notificationEvent = {
+            accepted: 'booking_accepted',
+            declined: 'booking_declined',
+            cancelled: 'booking_cancelled',
+            completed: 'booking_completed',
+        } as const
+        void notifyUser(bookingId, notificationEvent[newStatus])
+
         setSuccess(`Booking ${newStatus} successfully`)
         setProcessingId(null)
 
@@ -192,6 +201,8 @@ export function BookingsPage() {
                 }
                 : booking
         ))
+
+        void notifyUser(bookingId, 'booking_rescheduled')
 
         setSuccess('Booking rescheduled successfully')
         setEditingId(null)

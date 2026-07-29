@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { NotificationBell } from '@/components/layout/NotificationBell'
 
 export function Navbar() {
     const { session, profile, signOut } = useAuth()
@@ -113,6 +114,8 @@ export function Navbar() {
                 {profile.email}
               </span>
 
+                            <NotificationBell dark={barIsTransparent} />
+
                             <Link
                                 to="/dashboard"
                                 className={cn(
@@ -202,9 +205,12 @@ export function Navbar() {
 
                     {session && profile ? (
                         <div className="flex flex-col gap-3 py-4">
-                            <span className="text-xs font-medium tracking-wide text-black/50 truncate">
-                                {profile.email}
-                            </span>
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium tracking-wide text-black/50 truncate">
+                                    {profile.email}
+                                </span>
+                                <NotificationBell />
+                            </div>
                             <Link
                                 to="/dashboard"
                                 onClick={() => setMenuOpen(false)}

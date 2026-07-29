@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { notifyUser } from '@/lib/notifications'
 import { MapPin, Clock, ArrowLeft, Heart, Share2, Check, ImageOff, ChevronLeft, ChevronRight, X, Calendar } from 'lucide-react'
 
 interface Service {
@@ -272,20 +273,26 @@ function BookingModal({
                 throw new Error('This time slot is no longer available. Please choose another time.')
             }
 
-            const { error } = await supabase.from('bookings').insert({
-                service_id: service.id,
-                provider_id: providerId,
-                client_id: authProfile.id,
-                service_name: service.title,
-                booking_date: selectedDate,
-                start_time: selectedTime,
-                end_time: endTime,
-                status: 'pending',
-                client_notes: null,
-                provider_notes: null,
-            })
+            const { data: created, error } = await supabase
+                .from('bookings')
+                .insert({
+                    service_id: service.id,
+                    provider_id: providerId,
+                    client_id: authProfile.id,
+                    service_name: service.title,
+                    booking_date: selectedDate,
+                    start_time: selectedTime,
+                    end_time: endTime,
+                    status: 'pending',
+                    client_notes: null,
+                    provider_notes: null,
+                })
+                .select('id')
+                .single()
 
             if (error) throw error
+
+            void notifyUser(created.id, 'booking_created')
         },
         onSuccess: () => {
             setSuccess(true)

@@ -1,6 +1,27 @@
-export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled'
+// NOTE: the live database was altered by hand after migration 001 without
+// updating this file (e.g. bookings gained service_name/booking_date/
+// start_time/end_time/notes columns and a wider status enum). This type is
+// reconciled against what src/features/provider/pages/BookingsPage.tsx and
+// src/features/client/pages/MyBookingsPage.tsx actually read/write in
+// production. Other drifted tables (services.image_url/category,
+// provider_availability, service_images) are out of scope here.
+export type BookingStatus =
+  | 'pending'
+  | 'accepted'
+  | 'declined'
+  | 'cancelled'
+  | 'completed'
+  | 'rescheduled'
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent'
+export type NotificationType =
+  | 'booking_created'
+  | 'booking_accepted'
+  | 'booking_declined'
+  | 'booking_cancelled'
+  | 'booking_completed'
+  | 'booking_rescheduled'
+  | 'ticket_message'
 
 export interface User {
   id: string
@@ -39,7 +60,13 @@ export interface Booking {
   client_id: string
   provider_id: string
   service_id: string
+  service_name: string
+  booking_date: string
+  start_time: string
+  end_time: string
   status: BookingStatus
+  client_notes: string | null
+  provider_notes: string | null
   created_at: string
   updated_at: string
 }
@@ -76,6 +103,27 @@ export interface TicketMessage {
   ticket_id: string
   sender_id: string
   message: string
+  created_at: string
+}
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  body: string
+  data: Record<string, unknown>
+  read_at: string | null
+  created_at: string
+}
+
+export interface PushSubscription {
+  id: string
+  user_id: string
+  endpoint: string
+  p256dh: string
+  auth: string
+  user_agent: string | null
   created_at: string
 }
 
@@ -159,12 +207,23 @@ export type Database = {
           client_id: string
           provider_id: string
           service_id: string
+          service_name: string
+          booking_date: string
+          start_time: string
+          end_time: string
           status?: BookingStatus
+          client_notes?: string | null
+          provider_notes?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
+          booking_date?: string
+          start_time?: string
+          end_time?: string
           status?: BookingStatus
+          client_notes?: string | null
+          provider_notes?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -228,6 +287,37 @@ export type Database = {
         Update: {
           message?: string
         }
+        Relationships: []
+      }
+      notifications: {
+        Row: Notification
+        Insert: {
+          id?: string
+          user_id: string
+          type: NotificationType
+          title: string
+          body: string
+          data?: Record<string, unknown>
+          read_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          read_at?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: PushSubscription
+        Insert: {
+          id?: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: Record<string, never>
         Relationships: []
       }
     }
