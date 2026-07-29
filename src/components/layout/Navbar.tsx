@@ -5,6 +5,8 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { NotificationBell } from '@/components/layout/NotificationBell'
+import { ProfileMenu } from '@/components/layout/ProfileMenu'
+import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding'
 
 export function Navbar() {
     const { session, profile, signOut } = useAuth()
@@ -12,6 +14,7 @@ export function Navbar() {
     const isHome = pathname === '/'
     const [menuOpen, setMenuOpen] = useState(false)
     const [hasProviderProfile, setHasProviderProfile] = useState(false)
+    const { status: tourStatus, activeStep } = useOnboarding()
 
     const isLoggedIn = !!session
 
@@ -27,6 +30,13 @@ export function Navbar() {
         }
         void checkProviderProfile()
     }, [profile])
+
+    // Reveal the mobile nav for the tour's "nav overview" step, same idea
+    // as ProfileMenu opting itself open for the settings/help steps.
+    useEffect(() => {
+        if (tourStatus !== 'running' || window.innerWidth >= 640) return
+        queueMicrotask(() => setMenuOpen(activeStep?.id === 'nav-overview'))
+    }, [tourStatus, activeStep])
 
     // Base nav items for logged in users
     const baseNavItems = [
@@ -82,7 +92,7 @@ export function Navbar() {
                 </Link>
 
                 {/* Desktop nav */}
-                <nav className="hidden items-center gap-6 lg:gap-8 sm:flex">
+                <nav data-tour="nav-links" className="hidden items-center gap-6 lg:gap-8 sm:flex">
                     {navItems.map(({ to, label }) => (
                         <NavLink
                             key={to}
@@ -105,38 +115,14 @@ export function Navbar() {
                 <div className="hidden sm:flex items-center gap-4">
                     {session && profile ? (
                         <>
-              <span
-                  className={cn(
-                      'hidden text-xs font-medium tracking-wide lg:block',
-                      barIsTransparent ? 'text-white/60' : 'text-black/60',
-                  )}
-              >
-                {profile.email}
-              </span>
-
                             <NotificationBell dark={barIsTransparent} />
 
-                            <Link
-                                to="/dashboard"
-                                className={cn(
-                                    'border px-4 py-2 text-xs font-bold tracking-[0.1em] uppercase transition-colors',
-                                    barIsTransparent
-                                        ? 'border-white text-white hover:bg-white hover:text-black'
-                                        : 'border-black text-black hover:bg-black hover:text-white',
-                                )}
-                            >
-                                DASHBOARD
-                            </Link>
-
-                            <button
-                                onClick={() => void signOut()}
-                                className={cn(
-                                    'text-xs font-semibold tracking-wide uppercase transition-colors',
-                                    barIsTransparent ? 'text-white/50 hover:text-white' : 'text-black/50 hover:text-black',
-                                )}
-                            >
-                                LOGOUT
-                            </button>
+                            <ProfileMenu
+                                email={profile.email}
+                                hasProviderProfile={hasProviderProfile}
+                                onSignOut={() => void signOut()}
+                                dark={barIsTransparent}
+                            />
                         </>
                     ) : (
                         <>
@@ -186,7 +172,7 @@ export function Navbar() {
                     menuOpen ? 'max-h-[44rem]' : 'max-h-0',
                 )}
             >
-                <nav className="flex flex-col px-4 py-2">
+                <nav data-tour="nav-links" className="flex flex-col px-4 py-2">
                     {navItems.map(({ to, label }) => (
                         <NavLink
                             key={to}
@@ -206,27 +192,16 @@ export function Navbar() {
                     {session && profile ? (
                         <div className="flex flex-col gap-3 py-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-medium tracking-wide text-black/50 truncate">
-                                    {profile.email}
-                                </span>
+                                <ProfileMenu
+                                    email={profile.email}
+                                    hasProviderProfile={hasProviderProfile}
+                                    onSignOut={() => {
+                                        setMenuOpen(false)
+                                        void signOut()
+                                    }}
+                                />
                                 <NotificationBell />
                             </div>
-                            <Link
-                                to="/dashboard"
-                                onClick={() => setMenuOpen(false)}
-                                className="border border-black px-4 py-3 text-center text-xs font-bold tracking-[0.1em] uppercase text-black hover:bg-black hover:text-white"
-                            >
-                                DASHBOARD
-                            </Link>
-                            <button
-                                onClick={() => {
-                                    setMenuOpen(false)
-                                    void signOut()
-                                }}
-                                className="text-xs font-semibold tracking-wide uppercase text-black/50 text-left"
-                            >
-                                LOGOUT
-                            </button>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-3 py-4">

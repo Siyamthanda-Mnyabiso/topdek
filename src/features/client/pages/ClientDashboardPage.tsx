@@ -131,7 +131,7 @@ export function ClientDashboardPage() {
         <div className="px-6 md:px-12 lg:px-20 py-12 space-y-16">
 
           {/* YOUR STORE */}
-          <section>
+          <section data-tour="become-provider">
             <div className="flex items-end justify-between border-b border-black pb-4 mb-8">
               <div className="flex items-center gap-3">
                 <Building2 className="h-5 w-5" />
@@ -185,7 +185,7 @@ export function ClientDashboardPage() {
           </section>
 
           {/* SAVED PROVIDERS */}
-          <section>
+          <section data-tour="saved-providers">
             <div className="flex items-end justify-between border-b border-black pb-4 mb-8">
               <div className="flex items-center gap-3">
                 <Heart className="h-5 w-5" />
@@ -272,7 +272,7 @@ export function ClientDashboardPage() {
             </div>
 
             {/* SEARCH */}
-            <div className="relative mb-8 max-w-sm">
+            <div data-tour="client-search" className="relative mb-8 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
               <input
                   type="text"

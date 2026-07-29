@@ -41,8 +41,12 @@ export function useNotifications() {
   useEffect(() => {
     if (!userId) return
 
+    // Unique per effect run (not just per userId) — React StrictMode's dev-only
+    // mount→cleanup→mount double-invoke can otherwise hand back the same
+    // still-subscribed channel object before its async removal completes,
+    // and Supabase throws on .on() after .subscribe().
     const channel = supabase
-      .channel(`notifications:${userId}`)
+      .channel(`notifications:${userId}:${Date.now()}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },

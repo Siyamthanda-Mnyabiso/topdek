@@ -275,7 +275,7 @@ export function AvailabilityPage() {
                 )}
 
                 {/* ADD NEW SLOT */}
-                <div className="border border-black/20 p-6">
+                <div data-tour="availability-section" className="border border-black/20 p-6">
                     {!showAddForm ? (
                         <button
                             onClick={() => setShowAddForm(true)}

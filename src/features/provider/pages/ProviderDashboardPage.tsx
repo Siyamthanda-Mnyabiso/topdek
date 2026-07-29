@@ -45,7 +45,7 @@ export function ProviderDashboardPage() {
           )}
         </div>
 
-        <div className="px-6 md:px-12 lg:px-20 py-12 space-y-4 max-w-2xl">
+        <div data-tour="provider-dashboard-cards" className="px-6 md:px-12 lg:px-20 py-12 space-y-4 max-w-2xl">
 
           {/* BOOKINGS */}
           <div className="border border-black p-6 flex items-center justify-between">
@@ -149,14 +149,20 @@ export function ProviderDashboardPage() {
           )}
 
           {/* SETTINGS */}
-          <div className="border border-black/20 p-6 flex items-center justify-between opacity-50">
+          <div className="border border-black p-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Settings className="h-5 w-5" />
               <div>
                 <h2 className="font-black uppercase tracking-tight">SETTINGS</h2>
-                <p className="text-xs text-black/40 mt-0.5">Coming soon</p>
+                <p className="text-xs text-black/40 mt-0.5">Account and preferences</p>
               </div>
             </div>
+            <Link
+                to="/settings"
+                className="border border-black px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
+            >
+              MANAGE
+            </Link>
           </div>
 
         </div>

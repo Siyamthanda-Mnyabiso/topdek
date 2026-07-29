@@ -17,6 +17,8 @@ import { ForProfessionalsPage } from '@/features/home/pages/ForProfessionalsPage
 import { AvailabilityPage } from '@/features/provider/pages/AvailabilityPage'
 import { BookingsPage } from '@/features/provider/pages/BookingsPage'
 import { MyBookingsPage } from '@/features/client/pages/MyBookingsPage'
+import { SettingsPage } from '@/features/settings/pages/SettingsPage'
+import { HelpPage } from '@/features/support/pages/HelpPage'
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +42,8 @@ export const router = createBrowserRouter([
       { path: 'provider/availability', element: <AvailabilityPage /> },
       { path: 'provider/bookings', element: <BookingsPage /> },
       { path: 'my-bookings', element: <MyBookingsPage /> },
+      { path: 'settings', element: <SettingsPage /> },
+      { path: 'help', element: <HelpPage /> },
     ],
   },
 ])

@@ -63,6 +63,7 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Notifications"
+        data-tour="notification-bell"
         className={cn(
           'relative p-2 transition-colors',
           dark ? 'text-white/70 hover:text-white' : 'text-black/60 hover:text-black',
