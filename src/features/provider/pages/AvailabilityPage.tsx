@@ -34,48 +34,49 @@ export function AvailabilityPage() {
             navigate('/login')
             return
         }
-        void loadProviderProfile()
-    }, [profile])
 
-    async function loadProviderProfile() {
-        if (!profile) return
+        async function loadAvailability(providerId: string) {
+            const { data, error } = await supabase
+                .from('provider_availability')
+                .select('*')
+                .eq('provider_profile_id', providerId)
+                .order('specific_date')
+                .order('start_time')
 
-        const { data, error } = await supabase
-            .from('provider_profiles')
-            .select('id')
-            .eq('user_id', profile.id)
-            .single()
+            if (error) {
+                setError(error.message)
+                return
+            }
 
-        if (error || !data) {
-            setError('Provider profile not found. Please complete setup first.')
+            setAvailabilitySlots(data || [])
+
+            // Extract available dates for highlighting
+            const dates = (data || []).map(slot => slot.specific_date)
+            setAvailableDates([...new Set(dates)])
+        }
+
+        async function loadProviderProfile() {
+            if (!profile) return
+
+            const { data, error } = await supabase
+                .from('provider_profiles')
+                .select('id')
+                .eq('user_id', profile.id)
+                .single()
+
+            if (error || !data) {
+                setError('Provider profile not found. Please complete setup first.')
+                setLoading(false)
+                return
+            }
+
+            setProviderProfileId(data.id)
+            await loadAvailability(data.id)
             setLoading(false)
-            return
         }
 
-        setProviderProfileId(data.id)
-        await loadAvailability(data.id)
-        setLoading(false)
-    }
-
-    async function loadAvailability(providerId: string) {
-        const { data, error } = await supabase
-            .from('provider_availability')
-            .select('*')
-            .eq('provider_profile_id', providerId)
-            .order('specific_date')
-            .order('start_time')
-
-        if (error) {
-            setError(error.message)
-            return
-        }
-
-        setAvailabilitySlots(data || [])
-
-        // Extract available dates for highlighting
-        const dates = (data || []).map(slot => slot.specific_date)
-        setAvailableDates([...new Set(dates)])
-    }
+        void loadProviderProfile()
+    }, [profile, navigate])
 
     async function handleAddSlot() {
         if (!providerProfileId) return

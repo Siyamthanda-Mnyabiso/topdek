@@ -56,37 +56,38 @@ export function StoreSettingsPage() {
 
     useEffect(() => {
         if (!profile) return
-        void loadStore()
-    }, [profile])
 
-    async function loadStore() {
-        if (!profile) return
+        async function loadStore() {
+            if (!profile) return
 
-        const { data, error } = await supabase
-            .from('provider_profiles')
-            .select('*')
-            .eq('user_id', profile.id)
-            .single()
+            const { data, error } = await supabase
+                .from('provider_profiles')
+                .select('*')
+                .eq('user_id', profile.id)
+                .single()
 
-        if (error || !data) {
-            navigate('/provider/setup')
-            return
+            if (error || !data) {
+                navigate('/provider/setup')
+                return
+            }
+
+            setProviderProfileId(data.id)
+            setForm({
+                business_name: data.business_name ?? '',
+                description: data.description ?? '',
+                location: data.location ?? '',
+                phone: data.phone ?? '',
+                logo_url: data.logo_url ?? '',
+                cover_image_url: data.cover_image_url ?? '',
+            })
+            setCoverPreview(data.cover_image_url ?? null)
+            setLogoPreview(data.logo_url ?? null)
+            setLoading(false)
+            setSelectedCategories(data.categories ?? [])
         }
 
-        setProviderProfileId(data.id)
-        setForm({
-            business_name: data.business_name ?? '',
-            description: data.description ?? '',
-            location: data.location ?? '',
-            phone: data.phone ?? '',
-            logo_url: data.logo_url ?? '',
-            cover_image_url: data.cover_image_url ?? '',
-        })
-        setCoverPreview(data.cover_image_url ?? null)
-        setLogoPreview(data.logo_url ?? null)
-        setLoading(false)
-        setSelectedCategories(data.categories ?? [])
-    }
+        void loadStore()
+    }, [profile, navigate])
 
     async function uploadImage(
         file: File,

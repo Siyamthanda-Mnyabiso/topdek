@@ -34,35 +34,36 @@ export function MyBookingsPage() {
             navigate('/login')
             return
         }
-        void loadBookings()
-    }, [profile])
 
-    async function loadBookings() {
-        if (!profile) return
+        async function loadBookings() {
+            if (!profile) return
 
-        try {
-            const { data, error } = await supabase
-                .from('bookings')
-                .select(`
-                    *,
-                    provider:provider_id (
-                        business_name,
-                        location,
-                        logo_url
-                    )
-                `)
-                .eq('client_id', profile.id)
-                .order('booking_date', { ascending: true })
-                .order('start_time', { ascending: true })
+            try {
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select(`
+                        *,
+                        provider:provider_id (
+                            business_name,
+                            location,
+                            logo_url
+                        )
+                    `)
+                    .eq('client_id', profile.id)
+                    .order('booking_date', { ascending: true })
+                    .order('start_time', { ascending: true })
 
-            if (error) throw error
-            setBookings(data || [])
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load bookings')
-        } finally {
-            setLoading(false)
+                if (error) throw error
+                setBookings(data || [])
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to load bookings')
+            } finally {
+                setLoading(false)
+            }
         }
-    }
+
+        void loadBookings()
+    }, [profile, navigate])
 
     const getStatusColor = (status: string) => {
         switch(status) {

@@ -44,48 +44,49 @@ export function BookingsPage() {
             navigate('/login')
             return
         }
-        void loadProviderProfile()
-    }, [profile])
 
-    async function loadProviderProfile() {
-        if (!profile) return
+        async function loadBookings(providerId: string) {
+            const { data, error } = await supabase
+                .from('bookings')
+                .select(`
+                    *,
+                    client:client_id (
+                        email
+                    )
+                `)
+                .eq('provider_id', providerId)
+                .order('booking_date', { ascending: false })
+                .order('start_time', { ascending: true })
 
-        const { data, error } = await supabase
-            .from('provider_profiles')
-            .select('id')
-            .eq('user_id', profile.id)
-            .single()
+            if (error) {
+                setError(error.message)
+                return
+            }
 
-        if (error || !data) {
-            setError('Provider profile not found. Please complete setup first.')
+            setBookings(data || [])
+        }
+
+        async function loadProviderProfile() {
+            if (!profile) return
+
+            const { data, error } = await supabase
+                .from('provider_profiles')
+                .select('id')
+                .eq('user_id', profile.id)
+                .single()
+
+            if (error || !data) {
+                setError('Provider profile not found. Please complete setup first.')
+                setLoading(false)
+                return
+            }
+
+            await loadBookings(data.id)
             setLoading(false)
-            return
         }
 
-        await loadBookings(data.id)
-        setLoading(false)
-    }
-
-    async function loadBookings(providerId: string) {
-        const { data, error } = await supabase
-            .from('bookings')
-            .select(`
-                *,
-                client:client_id (
-                    email
-                )
-            `)
-            .eq('provider_id', providerId)
-            .order('booking_date', { ascending: false })
-            .order('start_time', { ascending: true })
-
-        if (error) {
-            setError(error.message)
-            return
-        }
-
-        setBookings(data || [])
-    }
+        void loadProviderProfile()
+    }, [profile, navigate])
 
     async function handleUpdateStatus(bookingId: string, newStatus: 'accepted' | 'declined' | 'cancelled' | 'completed') {
         setProcessingId(bookingId)

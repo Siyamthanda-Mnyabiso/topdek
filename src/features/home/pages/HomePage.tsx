@@ -48,7 +48,6 @@ export function HomePage() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      setLoading(false)
       return
     }
 

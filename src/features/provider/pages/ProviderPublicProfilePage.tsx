@@ -130,115 +130,114 @@ function BookingModal({
     const [hasExistingBooking, setHasExistingBooking] = useState(false)
     const [existingBookingStatus, setExistingBookingStatus] = useState<string | null>(null)
 
-    // Fetch all availability for this provider
+    // Fetch all availability for this provider, and check for an existing booking
     useEffect(() => {
+        async function checkExistingBooking() {
+            if (!authProfile) return
+
+            try {
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select('status')
+                    .eq('client_id', authProfile.id)
+                    .eq('service_id', service.id)
+                    .eq('provider_id', providerId)
+                    .in('status', ['pending', 'accepted'])
+                    .maybeSingle()
+
+                if (error) {
+                    console.error('Error checking existing booking:', error)
+                    return
+                }
+
+                if (data) {
+                    setHasExistingBooking(true)
+                    setExistingBookingStatus(data.status)
+                }
+            } catch (err) {
+                console.error('Error checking existing booking:', err)
+            }
+        }
+
+        async function fetchAllAvailability() {
+            setLoadingAvailability(true)
+            setError(null)
+
+            try {
+                console.log('Fetching availability for provider:', providerId)
+
+                // Get all availability slots for this provider
+                const { data: availabilityData, error: availabilityError } = await supabase
+                    .from('provider_availability')
+                    .select('*')
+                    .eq('provider_profile_id', providerId)
+                    .eq('is_available', true)
+                    .gte('specific_date', new Date().toISOString().split('T')[0]) // Only future dates
+                    .order('specific_date', { ascending: true })
+                    .order('start_time', { ascending: true })
+
+                if (availabilityError) {
+                    console.error('Availability error:', availabilityError)
+                    setError(`Failed to load availability: ${availabilityError.message}`)
+                    setLoadingAvailability(false)
+                    return
+                }
+
+                console.log('Availability data:', availabilityData)
+
+                if (!availabilityData || availabilityData.length === 0) {
+                    setHasAvailability(false)
+                    setLoadingAvailability(false)
+                    return
+                }
+
+                // Group by date
+                const groupedSlots: Record<string, string[]> = {}
+
+                for (const slot of availabilityData) {
+                    const date = slot.specific_date
+                    if (!groupedSlots[date]) {
+                        groupedSlots[date] = []
+                    }
+
+                    // Check if this time slot is already booked
+                    const { data: bookingsData } = await supabase
+                        .from('bookings')
+                        .select('id')
+                        .eq('provider_id', providerId)
+                        .eq('booking_date', date)
+                        .eq('start_time', slot.start_time)
+                        .in('status', ['pending', 'accepted'])
+
+                    if (!bookingsData || bookingsData.length === 0) {
+                        groupedSlots[date].push(slot.start_time)
+                    }
+                }
+
+                // Convert to array and filter out dates with no available times
+                const slots = Object.entries(groupedSlots)
+                    .filter(([, times]) => times.length > 0)
+                    .map(([date, times]) => ({
+                        date,
+                        times: times.sort()
+                    }))
+
+                console.log('Available slots:', slots)
+
+                setAvailableSlots(slots)
+                setHasAvailability(slots.length > 0)
+
+            } catch (err) {
+                console.error('Error fetching availability:', err)
+                setError(err instanceof Error ? err.message : 'Failed to load availability')
+            } finally {
+                setLoadingAvailability(false)
+            }
+        }
+
         void fetchAllAvailability()
         void checkExistingBooking()
-    }, [])
-
-    // Check if user already has a booking for this service
-    const checkExistingBooking = async () => {
-        if (!authProfile) return
-
-        try {
-            const { data, error } = await supabase
-                .from('bookings')
-                .select('status')
-                .eq('client_id', authProfile.id)
-                .eq('service_id', service.id)
-                .eq('provider_id', providerId)
-                .in('status', ['pending', 'accepted'])
-                .maybeSingle()
-
-            if (error) {
-                console.error('Error checking existing booking:', error)
-                return
-            }
-
-            if (data) {
-                setHasExistingBooking(true)
-                setExistingBookingStatus(data.status)
-            }
-        } catch (err) {
-            console.error('Error checking existing booking:', err)
-        }
-    }
-
-    const fetchAllAvailability = async () => {
-        setLoadingAvailability(true)
-        setError(null)
-
-        try {
-            console.log('Fetching availability for provider:', providerId)
-
-            // Get all availability slots for this provider
-            const { data: availabilityData, error: availabilityError } = await supabase
-                .from('provider_availability')
-                .select('*')
-                .eq('provider_profile_id', providerId)
-                .eq('is_available', true)
-                .gte('specific_date', new Date().toISOString().split('T')[0]) // Only future dates
-                .order('specific_date', { ascending: true })
-                .order('start_time', { ascending: true })
-
-            if (availabilityError) {
-                console.error('Availability error:', availabilityError)
-                setError(`Failed to load availability: ${availabilityError.message}`)
-                setLoadingAvailability(false)
-                return
-            }
-
-            console.log('Availability data:', availabilityData)
-
-            if (!availabilityData || availabilityData.length === 0) {
-                setHasAvailability(false)
-                setLoadingAvailability(false)
-                return
-            }
-
-            // Group by date
-            const groupedSlots: Record<string, string[]> = {}
-
-            for (const slot of availabilityData) {
-                const date = slot.specific_date
-                if (!groupedSlots[date]) {
-                    groupedSlots[date] = []
-                }
-
-                // Check if this time slot is already booked
-                const { data: bookingsData } = await supabase
-                    .from('bookings')
-                    .select('id')
-                    .eq('provider_id', providerId)
-                    .eq('booking_date', date)
-                    .eq('start_time', slot.start_time)
-                    .in('status', ['pending', 'accepted'])
-
-                if (!bookingsData || bookingsData.length === 0) {
-                    groupedSlots[date].push(slot.start_time)
-                }
-            }
-
-            // Convert to array and filter out dates with no available times
-            const slots = Object.entries(groupedSlots)
-                .filter(([_, times]) => times.length > 0)
-                .map(([date, times]) => ({
-                    date,
-                    times: times.sort()
-                }))
-
-            console.log('Available slots:', slots)
-
-            setAvailableSlots(slots)
-            setHasAvailability(slots.length > 0)
-
-        } catch (err) {
-            console.error('Error fetching availability:', err)
-            setError(err instanceof Error ? err.message : 'Failed to load availability')
-        } finally {
-            setLoadingAvailability(false)
-        }
-    }
+    }, [authProfile, providerId, service.id])
 
     const createBooking = useMutation({
         mutationFn: async () => {

@@ -1,5 +1,4 @@
 import {
-  createContext,
   useCallback,
   useEffect,
   useMemo,
@@ -9,19 +8,7 @@ import {
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@/types/database'
-
-interface AuthContextValue {
-  session: Session | null
-  authUser: SupabaseUser | null
-  profile: User | null
-  isLoading: boolean
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>
-  signOut: () => Promise<void>
-  refreshProfile: () => Promise<void>
-}
-
-export const AuthContext = createContext<AuthContextValue | null>(null)
+import { AuthContext } from '@/features/auth/auth-context'
 
 async function fetchUserProfile(userId: string): Promise<User | null> {
   const { data, error } = await supabase

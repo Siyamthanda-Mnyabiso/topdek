@@ -72,34 +72,7 @@ export function ServicesPage() {
     const [error, setError] = useState<string | null>(null)
 
     const [imageSlots, setImageSlots] = useState<ImageSlot[]>(emptySlots())
-    const fileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)]
-
-    useEffect(() => {
-        const loadProviderProfile = async () => {
-            if (!profile) return
-
-            try {
-                const { data, error } = await supabase
-                    .from('provider_profiles')
-                    .select('id')
-                    .eq('user_id', profile.id)
-                    .maybeSingle()
-
-                if (error) throw error
-                if (!data) {
-                    setError('Please create a store first before managing services.')
-                    return
-                }
-
-                setProviderId(data.id)
-                await fetchServices(data.id)
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to load provider profile')
-            }
-        }
-
-        loadProviderProfile()
-    }, [profile])
+    const fileInputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null])
 
     const fetchServices = useCallback(async (id: string) => {
         setIsLoading(true)
@@ -122,12 +95,39 @@ export function ServicesPage() {
         }
     }, [])
 
+    useEffect(() => {
+        async function loadProviderProfile() {
+            if (!profile) return
+
+            try {
+                const { data, error } = await supabase
+                    .from('provider_profiles')
+                    .select('id')
+                    .eq('user_id', profile.id)
+                    .maybeSingle()
+
+                if (error) throw error
+                if (!data) {
+                    setError('Please create a store first before managing services.')
+                    return
+                }
+
+                setProviderId(data.id)
+                await fetchServices(data.id)
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to load provider profile')
+            }
+        }
+
+        void loadProviderProfile()
+    }, [profile, fetchServices])
+
     const resetForm = useCallback(() => {
         setFormData(initialFormData)
         setEditingId(null)
         setError(null)
         setImageSlots(emptySlots())
-        fileInputRefs.forEach(ref => { if (ref.current) ref.current.value = '' })
+        fileInputRefs.current.forEach(el => { if (el) el.value = '' })
     }, [])
 
     const handleInputChange = useCallback((
@@ -164,8 +164,8 @@ export function ServicesPage() {
             next[slotIndex] = { id: null, file: null, previewUrl: null }
             return next
         })
-        const ref = fileInputRefs[slotIndex]
-        if (ref.current) ref.current.value = ''
+        const el = fileInputRefs.current[slotIndex]
+        if (el) el.value = ''
     }, [])
 
     const validateForm = useCallback((): boolean => {
@@ -228,7 +228,7 @@ export function ServicesPage() {
             try {
                 imageUrls = await uploadImageSlots(providerId)
             } catch (uploadErr) {
-                throw new Error(`Image upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}`)
+                throw new Error(`Image upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}`, { cause: uploadErr })
             }
 
             const coverImageUrl = imageUrls[0] ?? null
@@ -352,7 +352,7 @@ export function ServicesPage() {
                 slots[i] = { id: img.id, file: null, previewUrl: img.image_url }
             })
             setImageSlots(slots)
-        } catch (err) {
+        } catch {
             setImageSlots(emptySlots())
         }
     }, [])
@@ -409,7 +409,7 @@ export function ServicesPage() {
                                         {imageSlots.map((slot, i) => (
                                             <div key={i}>
                                                 <input
-                                                    ref={fileInputRefs[i]}
+                                                    ref={(el) => { fileInputRefs.current[i] = el }}
                                                     type="file"
                                                     accept="image/*"
                                                     onChange={(e) => handleImageSelect(i, e)}
