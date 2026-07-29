@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { PartyPopper } from 'lucide-react'
 
 interface CompletionScreenProps {
   onDismiss: () => void
@@ -67,7 +68,7 @@ export function CompletionScreen({ onDismiss }: CompletionScreenProps) {
       </div>
 
       <div className="w-full max-w-sm border border-black bg-white p-8 text-center shadow-2xl animate-tour-scale-in">
-        <p className="text-4xl">🎉</p>
+        <PartyPopper className="mx-auto h-10 w-10" strokeWidth={1.5} />
         <h2 id="completion-title" className="mt-4 text-2xl font-black uppercase tracking-tight">
           You're all set!
         </h2>

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Compass } from 'lucide-react'
 import type { TourDefinition } from '@/features/onboarding/tours.config'
 
 interface WelcomeScreenProps {
@@ -27,7 +28,7 @@ export function WelcomeScreen({ tour, onStart, onSkip }: WelcomeScreenProps) {
       aria-labelledby="welcome-title"
     >
       <div className="w-full max-w-sm border border-black bg-white p-8 text-center shadow-2xl animate-tour-scale-in">
-        <p className="text-4xl">👋</p>
+        <Compass className="mx-auto h-10 w-10" strokeWidth={1.5} />
         <h2 id="welcome-title" className="mt-4 text-2xl font-black uppercase tracking-tight">
           Welcome to TopDek!
         </h2>
