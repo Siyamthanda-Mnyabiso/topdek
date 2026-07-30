@@ -138,7 +138,7 @@ export function TourHost() {
   }, [status, reduceMotion])
 
   if (status === 'welcome' && tour) {
-    return createPortal(<WelcomeScreen tour={tour} onStart={begin} onSkip={skip} />, document.body)
+    return createPortal(<WelcomeScreen onStart={begin} onSkip={skip} />, document.body)
   }
 
   if (status === 'celebrating') {

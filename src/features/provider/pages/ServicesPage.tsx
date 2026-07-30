@@ -31,7 +31,7 @@ interface ServiceFormData {
 }
 
 const CATEGORIES = [
-    'Barbers',
+    'Haircuts',
     'Hair Styles',
     'Braids',
     'Nails',

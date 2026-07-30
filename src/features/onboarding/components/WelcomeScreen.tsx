@@ -1,14 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { Compass } from 'lucide-react'
-import type { TourDefinition } from '@/features/onboarding/tours.config'
 
 interface WelcomeScreenProps {
-  tour: TourDefinition
   onStart: () => void
   onSkip: () => void
 }
 
-export function WelcomeScreen({ tour, onStart, onSkip }: WelcomeScreenProps) {
+export function WelcomeScreen({ onStart, onSkip }: WelcomeScreenProps) {
   const startButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -33,8 +31,7 @@ export function WelcomeScreen({ tour, onStart, onSkip }: WelcomeScreenProps) {
           Welcome to TopDek!
         </h2>
         <p className="mt-3 text-sm text-black/60">
-          Let's take a quick {tour.steps.length > 6 ? '2-minute' : '1-minute'} tour so you know where
-          everything is.
+          Let's take a quick tour so you know where everything is.
         </p>
 
         <button
