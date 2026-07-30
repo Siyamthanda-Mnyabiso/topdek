@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Loader2, Pencil, Trash2, X, Plus, ImagePlus } from 'lucide-react'
+import { SERVICE_DURATION_MINUTES } from '@/features/provider/constants'
 
 interface Service {
     id: string
@@ -9,7 +10,6 @@ interface Service {
     title: string
     description: string | null
     price: number
-    duration: number
     is_active: boolean
     image_url: string | null
     category: string | null
@@ -26,7 +26,6 @@ interface ServiceFormData {
     title: string
     description: string
     price: string
-    duration: string
     category: string
 }
 
@@ -48,7 +47,6 @@ const initialFormData: ServiceFormData = {
     title: '',
     description: '',
     price: '',
-    duration: '',
     category: ''
 }
 
@@ -169,17 +167,13 @@ export function ServicesPage() {
     }, [])
 
     const validateForm = useCallback((): boolean => {
-        const { title, price, duration } = formData
-        if (!title.trim() || !price || !duration) {
-            setError('Please fill in title, price, and duration')
+        const { title, price } = formData
+        if (!title.trim() || !price) {
+            setError('Please fill in title and price')
             return false
         }
         if (Number(price) <= 0) {
             setError('Price must be greater than 0')
-            return false
-        }
-        if (Number(duration) <= 0) {
-            setError('Duration must be greater than 0')
             return false
         }
         return true
@@ -237,7 +231,7 @@ export function ServicesPage() {
                 title: formData.title.trim(),
                 description: formData.description.trim() || null,
                 price: Number(formData.price),
-                duration: Number(formData.duration),
+                duration: SERVICE_DURATION_MINUTES,
                 category: formData.category || null,
                 image_url: coverImageUrl,
                 is_active: true,
@@ -332,7 +326,6 @@ export function ServicesPage() {
             title: service.title,
             description: service.description ?? '',
             price: String(service.price),
-            duration: String(service.duration),
             category: service.category ?? '',
         })
         setError(null)
@@ -494,18 +487,6 @@ export function ServicesPage() {
                                     step="0.01"
                                 />
 
-                                <input
-                                    name="duration"
-                                    type="number"
-                                    className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                                    placeholder="Duration (minutes) *"
-                                    value={formData.duration}
-                                    onChange={handleInputChange}
-                                    disabled={isSubmitting}
-                                    min="1"
-                                    step="1"
-                                />
-
                                 <button
                                     onClick={saveService}
                                     disabled={isSubmitting}
@@ -600,8 +581,6 @@ export function ServicesPage() {
                                                     <span className="font-medium text-black">
                                                         R{service.price.toFixed(2)}
                                                     </span>
-                                                    <span className="text-zinc-400">•</span>
-                                                    <span>{service.duration} min</span>
                                                 </div>
                                             </div>
                                         </div>

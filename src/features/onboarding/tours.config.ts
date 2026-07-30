@@ -122,7 +122,7 @@ const providerMain: TourDefinition = {
     {
       id: 'create-service',
       title: 'Add a service',
-      description: 'This is where you list what you offer — pricing, duration, and photos.',
+      description: 'This is where you list what you offer — pricing, category, and photos.',
       targetId: 'add-service-form',
       route: '/provider/services',
       placement: 'left',

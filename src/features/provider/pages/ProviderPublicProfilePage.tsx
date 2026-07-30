@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { notifyUser } from '@/lib/notifications'
-import { MapPin, Clock, ArrowLeft, Heart, Share2, Check, ImageOff, ChevronLeft, ChevronRight, X, Calendar } from 'lucide-react'
+import { MapPin, ArrowLeft, Heart, Share2, Check, ImageOff, ChevronLeft, ChevronRight, X, Calendar } from 'lucide-react'
+import { SERVICE_DURATION_MINUTES } from '@/features/provider/constants'
 
 interface Service {
     id: string
@@ -12,7 +13,6 @@ interface Service {
     title: string
     description: string | null
     price: number
-    duration: number
     is_active: boolean
     created_at: string
     image_url: string | null
@@ -250,10 +250,10 @@ function BookingModal({
                 throw new Error('Please choose a date and time')
             }
 
-            // Calculate end time based on duration
+            // Calculate end time based on the fixed slot length
             const [hours, minutes] = selectedTime.split(':').map(Number)
             const startMinutes = hours * 60 + minutes
-            const endMinutes = startMinutes + service.duration
+            const endMinutes = startMinutes + SERVICE_DURATION_MINUTES
             const endHours = Math.floor(endMinutes / 60)
             const endMins = endMinutes % 60
             const endTime = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`
@@ -368,7 +368,7 @@ function BookingModal({
                                 {service.title}
                             </p>
                             <p className="mt-1 text-sm text-black/60">
-                                R{service.price.toFixed(2)} · {service.duration} min
+                                R{service.price.toFixed(2)}
                             </p>
                         </div>
 
@@ -790,10 +790,6 @@ export function ProviderPublicProfilePage() {
                                             <div className="flex items-center gap-4 mt-3">
                                                 <span className="text-sm font-black">
                                                     R{service.price.toFixed(2)}
-                                                </span>
-                                                <span className="flex items-center gap-1.5 text-xs text-black/50">
-                                                    <Clock className="h-3.5 w-3.5" />
-                                                    {service.duration} min
                                                 </span>
                                             </div>
 
