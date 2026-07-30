@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { getTour, type TourDefinition } from '@/features/onboarding/tours.config'
@@ -19,18 +19,23 @@ async function upsertProgress(
   userId: string,
   tourId: string,
   fields: Partial<Pick<ProgressRow, 'completed' | 'current_step'>> & { completed_at?: string | null },
-) {
+): Promise<boolean> {
   const { error } = await supabase
     .from('onboarding_progress')
     .upsert(
       { user_id: userId, tour_id: tourId, ...fields },
       { onConflict: 'user_id,tour_id' },
     )
-  if (error) console.error('Failed to save onboarding progress:', error.message)
+  if (error) {
+    console.error('Failed to save onboarding progress:', error.message)
+    return false
+  }
+  return true
 }
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const { authUser, profile } = useAuth()
+  const queryClient = useQueryClient()
   const [status, setStatus] = useState<OnboardingStatus>('idle')
   const [tour, setTour] = useState<TourDefinition | null>(null)
   const [stepIndex, setStepIndex] = useState(0)
@@ -98,50 +103,74 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setStatus('welcome')
   }, [])
 
+  // Writes through to the onboarding-progress cache entry a saved tour
+  // would be read from on next mount — so this tab's own view of "have I
+  // seen this tour" reflects a successful save immediately, instead of
+  // depending on a fresh network read (and staying wrong for the rest of
+  // the session, e.g. re-showing the welcome screen, if that read happens
+  // to serve stale cached data). Skipped entirely if the write failed, so
+  // a save error doesn't get masked by an optimistic cache update.
+  const syncProgress = useCallback(
+    async (tourId: string, fields: Partial<Pick<ProgressRow, 'completed' | 'current_step'>> & { completed_at?: string | null }) => {
+      if (!authUser) return
+      const ok = await upsertProgress(authUser.id, tourId, fields)
+      if (!ok) return
+      queryClient.setQueryData<ProgressRow | null>(
+        ['onboarding-progress', authUser.id, tourId],
+        (old) => ({
+          tour_id: tourId,
+          completed: fields.completed ?? old?.completed ?? false,
+          current_step: fields.current_step ?? old?.current_step ?? 0,
+        }),
+      )
+    },
+    [authUser, queryClient],
+  )
+
   const begin = useCallback(() => {
     if (!authUser || !tour) return
     setStepIndex(0)
     setStatus('running')
-    void upsertProgress(authUser.id, tour.id, { completed: false, current_step: 0, completed_at: null })
-  }, [authUser, tour])
+    void syncProgress(tour.id, { completed: false, current_step: 0, completed_at: null })
+  }, [authUser, tour, syncProgress])
 
   const next = useCallback(() => {
     if (!authUser || !tour) return
     setStepIndex((i) => {
       const nextIndex = Math.min(i + 1, tour.steps.length - 1)
-      void upsertProgress(authUser.id, tour.id, { current_step: nextIndex })
+      void syncProgress(tour.id, { current_step: nextIndex })
       return nextIndex
     })
-  }, [authUser, tour])
+  }, [authUser, tour, syncProgress])
 
   const prev = useCallback(() => {
     if (!authUser || !tour) return
     setStepIndex((i) => {
       const prevIndex = Math.max(i - 1, 0)
-      void upsertProgress(authUser.id, tour.id, { current_step: prevIndex })
+      void syncProgress(tour.id, { current_step: prevIndex })
       return prevIndex
     })
-  }, [authUser, tour])
+  }, [authUser, tour, syncProgress])
 
   const skip = useCallback(() => {
     if (!authUser || !tour) return
-    void upsertProgress(authUser.id, tour.id, {
+    void syncProgress(tour.id, {
       completed: true,
       completed_at: new Date().toISOString(),
     })
     setStatus('idle')
     setTour(null)
-  }, [authUser, tour])
+  }, [authUser, tour, syncProgress])
 
   const finish = useCallback(() => {
     if (!authUser || !tour) return
-    void upsertProgress(authUser.id, tour.id, {
+    void syncProgress(tour.id, {
       completed: true,
       current_step: tour.steps.length,
       completed_at: new Date().toISOString(),
     })
     setStatus('celebrating')
-  }, [authUser, tour])
+  }, [authUser, tour, syncProgress])
 
   const dismissCelebration = useCallback(() => {
     setStatus('idle')
