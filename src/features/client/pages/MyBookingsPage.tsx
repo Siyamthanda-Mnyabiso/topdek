@@ -23,13 +23,14 @@ interface Booking {
 }
 
 export function MyBookingsPage() {
-    const { profile } = useAuth()
+    const { profile, isLoading: authLoading } = useAuth()
     const navigate = useNavigate()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [bookings, setBookings] = useState<Booking[]>([])
 
     useEffect(() => {
+        if (authLoading) return
         if (!profile) {
             navigate('/login')
             return
@@ -63,7 +64,7 @@ export function MyBookingsPage() {
         }
 
         void loadBookings()
-    }, [profile, navigate])
+    }, [profile, authLoading, navigate])
 
     const getStatusColor = (status: string) => {
         switch(status) {

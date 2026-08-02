@@ -26,7 +26,7 @@ interface Booking {
 type FilterStatus = 'all' | 'pending' | 'accepted' | 'declined' | 'cancelled' | 'completed' | 'rescheduled'
 
 export function BookingsPage() {
-    const { profile } = useAuth()
+    const { profile, isLoading: authLoading } = useAuth()
     const navigate = useNavigate()
 
     const [loading, setLoading] = useState(true)
@@ -41,6 +41,7 @@ export function BookingsPage() {
     const [editEndTime, setEditEndTime] = useState('')
 
     useEffect(() => {
+        if (authLoading) return
         if (!profile) {
             navigate('/login')
             return
@@ -87,7 +88,7 @@ export function BookingsPage() {
         }
 
         void loadProviderProfile()
-    }, [profile, navigate])
+    }, [profile, authLoading, navigate])
 
     async function handleUpdateStatus(bookingId: string, newStatus: 'accepted' | 'declined' | 'cancelled' | 'completed') {
         setProcessingId(bookingId)
@@ -274,7 +275,7 @@ export function BookingsPage() {
             {/* HEADER */}
             <div className="border-b border-black px-6 md:px-12 lg:px-20 py-12">
                 <p className="text-xs font-semibold tracking-[0.3em] uppercase text-black/40">TOPDEK</p>
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <h1 className="mt-2 text-4xl md:text-6xl font-black uppercase tracking-tight">
                             BOOKINGS
@@ -283,7 +284,7 @@ export function BookingsPage() {
                             Manage all client booking requests.
                         </p>
                     </div>
-                    <div className="text-right">
+                    <div className="sm:text-right">
                         <span className="text-2xl font-black">{statusCounts.pending}</span>
                         <span className="text-xs font-bold uppercase text-black/40 block">Pending</span>
                     </div>

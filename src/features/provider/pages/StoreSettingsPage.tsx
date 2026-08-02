@@ -360,7 +360,7 @@ export function StoreSettingsPage() {
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-1.5">
                             <label className="text-xs font-bold tracking-[0.15em] uppercase">
                                 LOCATION
@@ -431,11 +431,11 @@ export function StoreSettingsPage() {
 
                     <p className="text-xs break-all">{shareLink}</p>
 
-                    <div className="flex gap-6 items-center">
+                    <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
                         {qrCode && (
                             <img
                                 src={qrCode}
-                                className="w-40 h-40 border"
+                                className="w-40 h-40 border shrink-0"
                                 alt="QR Code"
                             />
                         )}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { Plus, Trash2, Clock } from 'lucide-react'
+import { Plus, Trash2, Clock, X, Pencil, Check } from 'lucide-react'
 
 interface AvailabilitySlot {
     id?: string
@@ -12,8 +12,29 @@ interface AvailabilitySlot {
     is_available: boolean
 }
 
+interface DateTimeDraft {
+    startTime: string
+    endTime: string
+}
+
+// Formats a Date using its local Y/M/D — avoids the day shifting backward
+// when toISOString() converts local midnight to UTC in timezones ahead of it.
+function toLocalDateString(date: Date): string {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+}
+
+// Parses a "YYYY-MM-DD" string as a local date instead of UTC midnight —
+// `new Date(dateStr)` shifts the displayed day backward in timezones behind UTC.
+function parseLocalDate(dateStr: string): Date {
+    const [year, month, day] = dateStr.split('-').map(Number)
+    return new Date(year, month - 1, day)
+}
+
 export function AvailabilityPage() {
-    const { profile } = useAuth()
+    const { profile, isLoading: authLoading } = useAuth()
     const navigate = useNavigate()
 
     const [loading, setLoading] = useState(true)
@@ -22,14 +43,20 @@ export function AvailabilityPage() {
     const [success, setSuccess] = useState(false)
     const [providerProfileId, setProviderProfileId] = useState<string | null>(null)
     const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([])
-    const [selectedDate, setSelectedDate] = useState('')
-    const [startTime, setStartTime] = useState('09:00')
-    const [endTime, setEndTime] = useState('17:00')
+    const [selectedDates, setSelectedDates] = useState<string[]>([])
+    const [dateTimes, setDateTimes] = useState<Record<string, DateTimeDraft>>({})
+    const [defaultStartTime, setDefaultStartTime] = useState('09:00')
+    const [defaultEndTime, setDefaultEndTime] = useState('17:00')
     const [showAddForm, setShowAddForm] = useState(false)
     const [currentMonth, setCurrentMonth] = useState(new Date())
     const [availableDates, setAvailableDates] = useState<string[]>([])
+    const [editingSlotId, setEditingSlotId] = useState<string | null>(null)
+    const [editStartTime, setEditStartTime] = useState('')
+    const [editEndTime, setEditEndTime] = useState('')
+    const [editError, setEditError] = useState<string | null>(null)
 
     useEffect(() => {
+        if (authLoading) return
         if (!profile) {
             navigate('/login')
             return
@@ -76,37 +103,77 @@ export function AvailabilityPage() {
         }
 
         void loadProviderProfile()
-    }, [profile, navigate])
+    }, [profile, authLoading, navigate])
 
-    async function handleAddSlot() {
+    function toggleDateSelection(dateStr: string) {
+        setSelectedDates(prev => {
+            if (prev.includes(dateStr)) {
+                setDateTimes(times => {
+                    const next = { ...times }
+                    delete next[dateStr]
+                    return next
+                })
+                return prev.filter(d => d !== dateStr)
+            }
+
+            setDateTimes(times => ({
+                ...times,
+                [dateStr]: { startTime: defaultStartTime, endTime: defaultEndTime }
+            }))
+            return [...prev, dateStr].sort()
+        })
+    }
+
+    function removeSelectedDate(dateStr: string) {
+        setSelectedDates(prev => prev.filter(d => d !== dateStr))
+        setDateTimes(times => {
+            const next = { ...times }
+            delete next[dateStr]
+            return next
+        })
+    }
+
+    function updateDraftTime(dateStr: string, field: 'startTime' | 'endTime', value: string) {
+        setDateTimes(times => ({
+            ...times,
+            [dateStr]: { ...times[dateStr], [field]: value }
+        }))
+    }
+
+    async function handleAddSlots() {
         if (!providerProfileId) return
-        if (!selectedDate) {
-            setError('Please select a date')
+        if (selectedDates.length === 0) {
+            setError('Please select at least one date')
             return
         }
-        if (!startTime || !endTime) {
-            setError('Please select start and end times')
-            return
-        }
-        if (startTime >= endTime) {
-            setError('End time must be after start time')
-            return
+
+        for (const dateStr of selectedDates) {
+            const draft = dateTimes[dateStr]
+            if (!draft?.startTime || !draft?.endTime) {
+                setError('Please set start and end times for every selected date')
+                return
+            }
+            if (draft.startTime >= draft.endTime) {
+                setError(`End time must be after start time for ${parseLocalDate(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`)
+                return
+            }
         }
 
         setSaving(true)
         setError(null)
 
+        const rows = selectedDates.map(dateStr => ({
+            provider_profile_id: providerProfileId,
+            specific_date: dateStr,
+            start_time: dateTimes[dateStr].startTime,
+            end_time: dateTimes[dateStr].endTime,
+            is_available: true
+        }))
+
         const { data, error } = await supabase
             .from('provider_availability')
-            .insert({
-                provider_profile_id: providerProfileId,
-                specific_date: selectedDate,
-                start_time: startTime,
-                end_time: endTime,
-                is_available: true
-            })
+            .insert(rows)
             .select()
-            .single()
 
         if (error) {
             setError(error.message)
@@ -114,16 +181,60 @@ export function AvailabilityPage() {
             return
         }
 
-        setAvailabilitySlots([...availabilitySlots, data])
-        setAvailableDates([...new Set([...availableDates, selectedDate])])
+        setAvailabilitySlots([...availabilitySlots, ...(data || [])])
+        setAvailableDates([...new Set([...availableDates, ...selectedDates])])
         setShowAddForm(false)
-        setSelectedDate('')
-        setStartTime('09:00')
-        setEndTime('17:00')
+        setSelectedDates([])
+        setDateTimes({})
+        setDefaultStartTime('09:00')
+        setDefaultEndTime('17:00')
         setSuccess(true)
         setSaving(false)
 
         setTimeout(() => setSuccess(false), 3000)
+    }
+
+    function startEditSlot(slot: AvailabilitySlot) {
+        setEditingSlotId(slot.id ?? null)
+        setEditStartTime(slot.start_time)
+        setEditEndTime(slot.end_time)
+        setEditError(null)
+    }
+
+    function cancelEditSlot() {
+        setEditingSlotId(null)
+        setEditError(null)
+    }
+
+    async function handleSaveEditSlot(id: string) {
+        if (!editStartTime || !editEndTime) {
+            setEditError('Please set both start and end times')
+            return
+        }
+        if (editStartTime >= editEndTime) {
+            setEditError('End time must be after start time')
+            return
+        }
+
+        const { error } = await supabase
+            .from('provider_availability')
+            .update({ start_time: editStartTime, end_time: editEndTime })
+            .eq('id', id)
+
+        if (error) {
+            setEditError(error.message)
+            return
+        }
+
+        setAvailabilitySlots(slots =>
+            slots.map(slot =>
+                slot.id === id
+                    ? { ...slot, start_time: editStartTime, end_time: editEndTime }
+                    : slot
+            )
+        )
+        setEditingSlotId(null)
+        setEditError(null)
     }
 
     async function handleToggleAvailability(id: string, currentStatus: boolean) {
@@ -188,23 +299,23 @@ export function AvailabilityPage() {
         // Add days of the month
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(year, month, day)
-            const dateStr = date.toISOString().split('T')[0]
+            const dateStr = toLocalDateString(date)
             const isPast = date < today
             const hasAvailability = availableDates.includes(dateStr)
-            const isSelected = dateStr === selectedDate
+            const isSelected = selectedDates.includes(dateStr)
 
             days.push(
                 <button
                     key={day}
-                    onClick={() => !isPast && setSelectedDate(dateStr)}
+                    onClick={() => !isPast && toggleDateSelection(dateStr)}
                     disabled={isPast}
                     className={`h-10 rounded-md text-sm font-medium transition-colors ${
                         isPast
                             ? 'text-gray-300 cursor-not-allowed'
-                            : hasAvailability
-                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                : isSelected
-                                    ? 'bg-black text-white hover:bg-gray-800'
+                            : isSelected
+                                ? 'bg-black text-white hover:bg-gray-800'
+                                : hasAvailability
+                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                     : 'hover:bg-gray-100'
                     } ${isSelected ? 'ring-2 ring-black ring-offset-2' : ''}`}
                 >
@@ -289,9 +400,12 @@ export function AvailabilityPage() {
                             {/* Calendar */}
                             <div>
                                 <label className="block text-xs font-bold tracking-[0.15em] uppercase text-black/40 mb-3">
-                                    SELECT DATE
+                                    SELECT DATES
                                 </label>
-                                <div className="border border-black/20 p-4">
+                                <p className="text-xs text-black/40 mb-3">
+                                    Tap as many dates as you like — you can set different times for each one below.
+                                </p>
+                                <div className="border border-black/20 p-3 sm:p-4">
                                     <div className="flex items-center justify-between mb-4">
                                         <button
                                             onClick={() => changeMonth(-1)}
@@ -299,7 +413,7 @@ export function AvailabilityPage() {
                                         >
                                             ←
                                         </button>
-                                        <span className="font-bold uppercase tracking-widest">
+                                        <span className="font-bold uppercase tracking-widest text-sm sm:text-base">
                                             {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
                                         </span>
                                         <button
@@ -321,63 +435,105 @@ export function AvailabilityPage() {
                                     <div className="grid grid-cols-7 gap-1">
                                         {renderCalendar()}
                                     </div>
-
-                                    {selectedDate && (
-                                        <div className="mt-3 text-sm text-black/60">
-                                            Selected: <span className="font-bold">
-                                                {new Date(selectedDate).toLocaleDateString('en-US', {
-                                                    weekday: 'long',
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                    year: 'numeric'
-                                                })}
-                                            </span>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
 
-                            {/* Time selection */}
-                            <div className="grid grid-cols-2 gap-4">
+                            {/* Default time for newly selected dates */}
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold tracking-[0.15em] uppercase text-black/40">
-                                        START TIME
+                                        DEFAULT START
                                     </label>
                                     <input
                                         type="time"
-                                        value={startTime}
-                                        onChange={(e) => setStartTime(e.target.value)}
+                                        value={defaultStartTime}
+                                        onChange={(e) => setDefaultStartTime(e.target.value)}
                                         className="w-full border border-black px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-black"
                                     />
                                 </div>
 
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold tracking-[0.15em] uppercase text-black/40">
-                                        END TIME
+                                        DEFAULT END
                                     </label>
                                     <input
                                         type="time"
-                                        value={endTime}
-                                        onChange={(e) => setEndTime(e.target.value)}
+                                        value={defaultEndTime}
+                                        onChange={(e) => setDefaultEndTime(e.target.value)}
                                         className="w-full border border-black px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-black"
                                     />
                                 </div>
                             </div>
 
-                            <div className="flex gap-3">
+                            {/* Selected dates - each editable individually, like a booking calendar */}
+                            {selectedDates.length > 0 && (
+                                <div className="space-y-2">
+                                    <label className="block text-xs font-bold tracking-[0.15em] uppercase text-black/40">
+                                        {selectedDates.length} DATE{selectedDates.length > 1 ? 'S' : ''} SELECTED — EDIT TIMES BELOW
+                                    </label>
+                                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                                        {selectedDates.map((dateStr) => {
+                                            const draft = dateTimes[dateStr]
+                                            return (
+                                                <div
+                                                    key={dateStr}
+                                                    className="flex flex-col gap-2 border border-black/20 p-3 sm:flex-row sm:items-center sm:justify-between"
+                                                >
+                                                    <span className="text-sm font-bold">
+                                                        {parseLocalDate(dateStr).toLocaleDateString('en-US', {
+                                                            weekday: 'short',
+                                                            month: 'short',
+                                                            day: 'numeric'
+                                                        })}
+                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="time"
+                                                            value={draft?.startTime ?? ''}
+                                                            onChange={(e) => updateDraftTime(dateStr, 'startTime', e.target.value)}
+                                                            className="w-full min-w-0 border border-black px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-black sm:w-auto"
+                                                        />
+                                                        <span className="text-black/30 text-xs">TO</span>
+                                                        <input
+                                                            type="time"
+                                                            value={draft?.endTime ?? ''}
+                                                            onChange={(e) => updateDraftTime(dateStr, 'endTime', e.target.value)}
+                                                            className="w-full min-w-0 border border-black px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-black sm:w-auto"
+                                                        />
+                                                        <button
+                                                            onClick={() => removeSelectedDate(dateStr)}
+                                                            aria-label="Remove date"
+                                                            className="p-1 text-black/30 hover:text-red-500 transition-colors shrink-0"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex flex-col gap-3 sm:flex-row">
                                 <button
-                                    onClick={() => void handleAddSlot()}
-                                    disabled={saving || !selectedDate}
+                                    onClick={() => void handleAddSlots()}
+                                    disabled={saving || selectedDates.length === 0}
                                     className="flex-1 border border-black bg-black px-6 py-2 text-xs font-bold tracking-[0.15em] uppercase text-white hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {saving ? 'SAVING...' : 'ADD AVAILABILITY'}
+                                    {saving
+                                        ? 'SAVING...'
+                                        : selectedDates.length > 1
+                                            ? `ADD ${selectedDates.length} DATES`
+                                            : 'ADD AVAILABILITY'}
                                 </button>
                                 <button
                                     onClick={() => {
                                         setShowAddForm(false)
-                                        setSelectedDate('')
-                                        setStartTime('09:00')
-                                        setEndTime('17:00')
+                                        setSelectedDates([])
+                                        setDateTimes({})
+                                        setDefaultStartTime('09:00')
+                                        setDefaultEndTime('17:00')
                                     }}
                                     className="border border-black/20 px-6 py-2 text-xs font-bold tracking-[0.15em] uppercase text-black/40 hover:border-black hover:text-black transition-colors"
                                 >
@@ -403,7 +559,7 @@ export function AvailabilityPage() {
                             {sortedDates.map((date) => (
                                 <div key={date} className="border border-black/20 p-4">
                                     <h3 className="text-sm font-bold uppercase mb-2">
-                                        {new Date(date).toLocaleDateString('en-US', {
+                                        {parseLocalDate(date).toLocaleDateString('en-US', {
                                             weekday: 'long',
                                             month: 'long',
                                             day: 'numeric',
@@ -411,47 +567,102 @@ export function AvailabilityPage() {
                                         })}
                                     </h3>
                                     <div className="space-y-2">
-                                        {groupedSlots[date].map((slot) => (
-                                            <div
-                                                key={slot.id}
-                                                className={`flex items-center justify-between border px-4 py-2 ${
-                                                    slot.is_available ? 'border-black/20' : 'border-red-200 bg-red-50/50'
-                                                }`}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex items-center gap-2 text-sm">
-                                                        <Clock className="h-4 w-4 text-black/40" />
-                                                        <span>
-                                                            {slot.start_time} - {slot.end_time}
+                                        {groupedSlots[date].map((slot) => {
+                                            const isEditing = editingSlotId === slot.id
+
+                                            if (isEditing) {
+                                                return (
+                                                    <div
+                                                        key={slot.id}
+                                                        className="flex flex-col gap-2 border border-black px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <input
+                                                                type="time"
+                                                                value={editStartTime}
+                                                                onChange={(e) => setEditStartTime(e.target.value)}
+                                                                className="w-full min-w-0 border border-black px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-black sm:w-auto"
+                                                            />
+                                                            <span className="text-black/30 text-xs">TO</span>
+                                                            <input
+                                                                type="time"
+                                                                value={editEndTime}
+                                                                onChange={(e) => setEditEndTime(e.target.value)}
+                                                                className="w-full min-w-0 border border-black px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-black sm:w-auto"
+                                                            />
+                                                        </div>
+                                                        {editError && (
+                                                            <p className="text-xs font-semibold text-red-600">{editError}</p>
+                                                        )}
+                                                        <div className="flex items-center gap-2 self-end sm:self-auto">
+                                                            <button
+                                                                onClick={() => void handleSaveEditSlot(slot.id!)}
+                                                                aria-label="Save times"
+                                                                className="p-1.5 border border-green-500 text-green-600 hover:bg-green-500 hover:text-white transition-colors"
+                                                            >
+                                                                <Check className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={cancelEditSlot}
+                                                                aria-label="Cancel edit"
+                                                                className="p-1.5 border border-black/20 text-black/40 hover:border-black hover:text-black transition-colors"
+                                                            >
+                                                                <X className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            }
+
+                                            return (
+                                                <div
+                                                    key={slot.id}
+                                                    className={`flex flex-col gap-2 border px-4 py-2 sm:flex-row sm:items-center sm:justify-between ${
+                                                        slot.is_available ? 'border-black/20' : 'border-red-200 bg-red-50/50'
+                                                    }`}
+                                                >
+                                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                                        <div className="flex items-center gap-2 text-sm">
+                                                            <Clock className="h-4 w-4 text-black/40" />
+                                                            <span>
+                                                                {slot.start_time} - {slot.end_time}
+                                                            </span>
+                                                        </div>
+                                                        <span className={`text-xs font-bold uppercase ${
+                                                            slot.is_available ? 'text-green-600' : 'text-red-600'
+                                                        }`}>
+                                                            {slot.is_available ? 'AVAILABLE' : 'UNAVAILABLE'}
                                                         </span>
                                                     </div>
-                                                    <span className={`text-xs font-bold uppercase ${
-                                                        slot.is_available ? 'text-green-600' : 'text-red-600'
-                                                    }`}>
-                                                        {slot.is_available ? 'AVAILABLE' : 'UNAVAILABLE'}
-                                                    </span>
-                                                </div>
 
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => handleToggleAvailability(slot.id!, slot.is_available)}
-                                                        className={`text-xs font-bold uppercase tracking-[0.1em] px-3 py-1 border ${
-                                                            slot.is_available
-                                                                ? 'border-red-500 text-red-500 hover:bg-red-500 hover:text-white'
-                                                                : 'border-green-500 text-green-500 hover:bg-green-500 hover:text-white'
-                                                        } transition-colors`}
-                                                    >
-                                                        {slot.is_available ? 'DISABLE' : 'ENABLE'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteSlot(slot.id!)}
-                                                        className="p-1 hover:text-red-500 transition-colors"
-                                                    >
-                                                        <Trash2 className="h-4 w-4 text-black/30 hover:text-red-500" />
-                                                    </button>
+                                                    <div className="flex items-center gap-2 self-end sm:self-auto">
+                                                        <button
+                                                            onClick={() => startEditSlot(slot)}
+                                                            aria-label="Edit times"
+                                                            className="p-1 hover:text-black transition-colors"
+                                                        >
+                                                            <Pencil className="h-4 w-4 text-black/30 hover:text-black" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleToggleAvailability(slot.id!, slot.is_available)}
+                                                            className={`text-xs font-bold uppercase tracking-[0.1em] px-3 py-1 border ${
+                                                                slot.is_available
+                                                                    ? 'border-red-500 text-red-500 hover:bg-red-500 hover:text-white'
+                                                                    : 'border-green-500 text-green-500 hover:bg-green-500 hover:text-white'
+                                                            } transition-colors`}
+                                                        >
+                                                            {slot.is_available ? 'DISABLE' : 'ENABLE'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteSlot(slot.id!)}
+                                                            className="p-1 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <Trash2 className="h-4 w-4 text-black/30 hover:text-red-500" />
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 </div>
                             ))}
