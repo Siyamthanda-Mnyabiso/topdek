@@ -124,7 +124,7 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
                   <p className="text-xs font-bold uppercase tracking-wide text-black">
                     {notification.title}
                   </p>
-                  <p className="mt-1 text-xs text-black/60 line-clamp-2">{notification.body}</p>
+                  <p className="mt-1 text-xs text-black/60">{notification.body}</p>
                   <p className="mt-1 text-[10px] text-black/30">{timeAgo(notification.created_at)}</p>
                 </button>
               ))

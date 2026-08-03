@@ -6,6 +6,7 @@ export function SignupPage() {
   const { signUp } = useAuth()
   const navigate = useNavigate()
 
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -16,7 +17,7 @@ export function SignupPage() {
     setError(null)
     setIsSubmitting(true)
 
-    const result = await signUp(email, password)
+    const result = await signUp(email, password, fullName)
 
     if (result.error) {
       setError(result.error)
@@ -42,6 +43,19 @@ export function SignupPage() {
                   {error}
                 </p>
             )}
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold tracking-[0.15em] uppercase">FULL NAME</label>
+              <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Enter your full name"
+                  required
+                  autoComplete="name"
+                  className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
+              />
+            </div>
 
             <div className="space-y-2">
               <label className="text-xs font-bold tracking-[0.15em] uppercase">EMAIL</label>

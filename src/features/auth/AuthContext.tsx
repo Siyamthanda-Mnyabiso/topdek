@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const signUp = useCallback(async (email: string, password: string) => {
+  const signUp = useCallback(async (email: string, password: string, fullName: string) => {
     const { data, error } = await supabase.auth.signUp({ email, password })
 
     if (error) return { error: error.message }
@@ -91,6 +91,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Trigger handles the insert — wait briefly for it to complete
     await new Promise((resolve) => setTimeout(resolve, 500))
+
+    // The insert trigger only knows about auth.users, so the name is set
+    // here as a follow-up update rather than passed through signUp.
+    const { error: nameError } = await supabase
+        .from('users')
+        .update({ full_name: fullName })
+        .eq('id', data.user.id)
+    if (nameError) {
+      console.error('Failed to save full name:', nameError.message)
+    }
 
     const userProfile = await fetchUserProfile(data.user.id)
     setProfile(userProfile)

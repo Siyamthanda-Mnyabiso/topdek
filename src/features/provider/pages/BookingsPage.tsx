@@ -19,6 +19,7 @@ interface Booking {
     provider_notes: string | null
     created_at: string
     client?: {
+        full_name?: string | null
         email?: string
     } | null
 }
@@ -53,6 +54,7 @@ export function BookingsPage() {
                 .select(`
                     *,
                     client:client_id (
+                        full_name,
                         email
                     )
                 `)
@@ -341,7 +343,7 @@ export function BookingsPage() {
                                         <div className="flex flex-wrap gap-4 mt-1 text-sm text-black/60">
                                             <div className="flex items-center gap-1">
                                                 <User className="h-3 w-3" />
-                                                {booking.client?.email || 'Unknown Client'}
+                                                {booking.client?.full_name || booking.client?.email || 'Unknown Client'}
                                             </div>
                                             {editingId === booking.id ? (
                                                 <div className="flex flex-wrap gap-2">

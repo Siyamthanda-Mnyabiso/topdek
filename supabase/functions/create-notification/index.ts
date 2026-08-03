@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
         booking_date,
         start_time,
         provider:provider_id ( user_id, business_name ),
-        client:client_id ( email )
+        client:client_id ( full_name, email )
       `,
       )
       .eq('id', bookingId)
@@ -77,7 +77,8 @@ Deno.serve(async (req) => {
       user_id: string
       business_name: string
     }
-    const client = booking.client as unknown as { email: string }
+    const client = booking.client as unknown as { full_name: string | null; email: string }
+    const clientName = client.full_name || client.email
 
     const isClient = user.id === booking.client_id
     const isProvider = user.id === provider.user_id
@@ -104,7 +105,7 @@ Deno.serve(async (req) => {
     const messages: Record<BookingEvent, { title: string; body: string }> = {
       booking_created: {
         title: 'New booking request',
-        body: `${client.email} requested ${booking.service_name} on ${when}`,
+        body: `${clientName} requested ${booking.service_name} on ${when}`,
       },
       booking_accepted: {
         title: 'Booking confirmed',

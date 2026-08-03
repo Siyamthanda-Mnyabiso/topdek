@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Compass } from 'lucide-react'
+import { Compass, Pencil, Check, X } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding'
 import { supabase } from '@/lib/supabase'
 
 export function SettingsPage() {
-  const { profile, isLoading } = useAuth()
+  const { profile, isLoading, refreshProfile } = useAuth()
   const navigate = useNavigate()
   const { start } = useOnboarding()
   const [hasProviderProfile, setHasProviderProfile] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState('')
+  const [savingName, setSavingName] = useState(false)
+  const [nameError, setNameError] = useState<string | null>(null)
 
   useEffect(() => {
     if (isLoading) return
@@ -30,6 +34,44 @@ export function SettingsPage() {
     void checkProviderProfile()
   }, [profile, isLoading, navigate])
 
+  function startEditName() {
+    setNameDraft(profile?.full_name ?? '')
+    setNameError(null)
+    setEditingName(true)
+  }
+
+  function cancelEditName() {
+    setEditingName(false)
+    setNameError(null)
+  }
+
+  async function saveName() {
+    const trimmed = nameDraft.trim()
+    if (!trimmed) {
+      setNameError('Name cannot be empty')
+      return
+    }
+    if (!profile) return
+
+    setSavingName(true)
+    setNameError(null)
+
+    const { error } = await supabase
+      .from('users')
+      .update({ full_name: trimmed })
+      .eq('id', profile.id)
+
+    setSavingName(false)
+
+    if (error) {
+      setNameError(error.message)
+      return
+    }
+
+    await refreshProfile()
+    setEditingName(false)
+  }
+
   if (!profile) return null
 
   return (
@@ -43,7 +85,51 @@ export function SettingsPage() {
         <section>
           <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-black/40 mb-4">Account</h2>
           <div className="border border-black p-6 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-xs font-semibold uppercase tracking-widest text-black/40 shrink-0">Full name</span>
+              {editingName ? (
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={nameDraft}
+                      onChange={(e) => setNameDraft(e.target.value)}
+                      autoFocus
+                      className="border border-black px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-black"
+                    />
+                    <button
+                      onClick={() => void saveName()}
+                      disabled={savingName}
+                      aria-label="Save name"
+                      className="p-1.5 border border-green-500 text-green-600 hover:bg-green-500 hover:text-white transition-colors disabled:opacity-50"
+                    >
+                      <Check className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={cancelEditName}
+                      disabled={savingName}
+                      aria-label="Cancel edit"
+                      className="p-1.5 border border-black/20 text-black/40 hover:border-black hover:text-black transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {nameError && <p className="text-xs font-semibold text-red-600">{nameError}</p>}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-black/70">{profile.full_name || 'Add your name'}</span>
+                  <button
+                    onClick={startEditName}
+                    aria-label="Edit name"
+                    className="p-1 text-black/30 hover:text-black transition-colors"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between border-t border-black/10 pt-3">
               <span className="text-xs font-semibold uppercase tracking-widest text-black/40">Email</span>
               <span className="text-sm text-black/70">{profile.email}</span>
             </div>
