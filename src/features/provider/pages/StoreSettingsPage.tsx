@@ -11,6 +11,11 @@ interface StoreForm {
     phone: string
     logo_url: string
     cover_image_url: string
+    instagram_url: string
+    facebook_url: string
+    tiktok_url: string
+    twitter_url: string
+    website_url: string
 }
 
 const CATEGORIES = [
@@ -42,6 +47,11 @@ export function StoreSettingsPage() {
         phone: '',
         logo_url: '',
         cover_image_url: '',
+        instagram_url: '',
+        facebook_url: '',
+        tiktok_url: '',
+        twitter_url: '',
+        website_url: '',
     })
 
     const [selectedCategories, setSelectedCategories] = useState<string[]>([])
@@ -79,6 +89,11 @@ export function StoreSettingsPage() {
                 phone: data.phone ?? '',
                 logo_url: data.logo_url ?? '',
                 cover_image_url: data.cover_image_url ?? '',
+                instagram_url: data.instagram_url ?? '',
+                facebook_url: data.facebook_url ?? '',
+                tiktok_url: data.tiktok_url ?? '',
+                twitter_url: data.twitter_url ?? '',
+                website_url: data.website_url ?? '',
             })
             setCoverPreview(data.cover_image_url ?? null)
             setLogoPreview(data.logo_url ?? null)
@@ -177,8 +192,8 @@ export function StoreSettingsPage() {
         }, 800)
     }
 
-    const shareLink = profile
-        ? `${window.location.origin}/professionals/${profile.id}`
+    const shareLink = providerProfileId
+        ? `${window.location.origin}/professionals/${providerProfileId}`
         : ''
 
     const qrCode = shareLink
@@ -386,6 +401,80 @@ export function StoreSettingsPage() {
                                 className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
                             />
                         </div>
+                    </div>
+                </div>
+
+                {/* SOCIAL LINKS */}
+                <div className="space-y-6">
+                    <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-black/40">
+                        SOCIAL LINKS
+                    </h2>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold tracking-[0.15em] uppercase">
+                                INSTAGRAM
+                            </label>
+                            <input
+                                type="url"
+                                value={form.instagram_url}
+                                onChange={(e) => setForm({ ...form, instagram_url: e.target.value })}
+                                placeholder="https://instagram.com/yourhandle"
+                                className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold tracking-[0.15em] uppercase">
+                                FACEBOOK
+                            </label>
+                            <input
+                                type="url"
+                                value={form.facebook_url}
+                                onChange={(e) => setForm({ ...form, facebook_url: e.target.value })}
+                                placeholder="https://facebook.com/yourpage"
+                                className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold tracking-[0.15em] uppercase">
+                                TIKTOK
+                            </label>
+                            <input
+                                type="url"
+                                value={form.tiktok_url}
+                                onChange={(e) => setForm({ ...form, tiktok_url: e.target.value })}
+                                placeholder="https://tiktok.com/@yourhandle"
+                                className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold tracking-[0.15em] uppercase">
+                                X / TWITTER
+                            </label>
+                            <input
+                                type="url"
+                                value={form.twitter_url}
+                                onChange={(e) => setForm({ ...form, twitter_url: e.target.value })}
+                                placeholder="https://x.com/yourhandle"
+                                className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold tracking-[0.15em] uppercase">
+                            WEBSITE
+                        </label>
+                        <input
+                            type="url"
+                            value={form.website_url}
+                            onChange={(e) => setForm({ ...form, website_url: e.target.value })}
+                            placeholder="https://yourwebsite.com"
+                            className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
+                        />
                     </div>
                 </div>
 

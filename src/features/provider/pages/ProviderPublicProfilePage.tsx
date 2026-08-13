@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { notifyUser } from '@/lib/notifications'
-import { MapPin, ArrowLeft, Heart, Share2, Check, ImageOff, ChevronLeft, ChevronRight, X, Calendar } from 'lucide-react'
+import { MapPin, ArrowLeft, Heart, Share2, Check, ImageOff, ChevronLeft, ChevronRight, X, Calendar, Globe } from 'lucide-react'
 import { SERVICE_DURATION_MINUTES } from '@/features/provider/constants'
 
 interface Service {
@@ -35,8 +35,66 @@ interface ProviderProfile {
     phone: string | null
     logo_url: string | null
     cover_image_url: string | null
+    instagram_url: string | null
+    facebook_url: string | null
+    tiktok_url: string | null
+    twitter_url: string | null
+    website_url: string | null
     created_at: string
 }
+
+// --- Social links -----------------------------------------------------
+
+function withScheme(url: string): string {
+    return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
+function InstagramIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
+            <rect x="3" y="3" width="18" height="18" rx="5" />
+            <circle cx="12" cy="12" r="4" />
+            <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+        </svg>
+    )
+}
+
+function FacebookIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
+            <path d="M15 4h-2a4 4 0 0 0-4 4v3H7v4h2v7h4v-7h2.5l.5-4h-3V8a1 1 0 0 1 1-1h2.5V4Z" />
+        </svg>
+    )
+}
+
+function TikTokIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
+            <path d="M15 3v11.5a3.5 3.5 0 1 1-3.5-3.5" />
+            <path d="M15 3c0 3 2 5 5 5" />
+        </svg>
+    )
+}
+
+function XIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
+            <path d="M4 4l16 16M20 4L4 20" />
+        </svg>
+    )
+}
+
+const SOCIAL_LINKS: {
+    key: 'instagram_url' | 'facebook_url' | 'tiktok_url' | 'twitter_url' | 'website_url'
+    label: string
+    Icon: React.ComponentType<{ className?: string }>
+}[] = [
+    { key: 'instagram_url', label: 'INSTAGRAM', Icon: InstagramIcon },
+    { key: 'facebook_url', label: 'FACEBOOK', Icon: FacebookIcon },
+    { key: 'tiktok_url', label: 'TIKTOK', Icon: TikTokIcon },
+    { key: 'twitter_url', label: 'X', Icon: XIcon },
+    { key: 'website_url', label: 'WEBSITE', Icon: Globe },
+]
 
 // --- Carousel for a single service's images -------------------------------
 
@@ -735,6 +793,33 @@ export function ProviderPublicProfilePage() {
                         <p className="text-base text-black/70 leading-relaxed max-w-2xl">
                             {profile.description}
                         </p>
+                    </div>
+                )}
+
+                {SOCIAL_LINKS.some(({ key }) => profile[key]) && (
+                    <div className="mb-12 pb-12 border-b border-black">
+                        <h2 className="text-xs font-bold tracking-[0.3em] uppercase text-black/40 mb-4">
+                            CONNECT
+                        </h2>
+                        <div className="flex flex-wrap gap-3">
+                            {SOCIAL_LINKS.map(({ key, label, Icon }) => {
+                                const url = profile[key]
+                                if (!url) return null
+
+                                return (
+                                    <a
+                                        key={key}
+                                        href={withScheme(url)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 border border-black px-4 py-2.5 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
+                                    >
+                                        <Icon />
+                                        {label}
+                                    </a>
+                                )
+                            })}
+                        </div>
                     </div>
                 )}
 
