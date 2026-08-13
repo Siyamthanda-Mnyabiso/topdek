@@ -7,7 +7,9 @@ export function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as { from?: string } | null)?.from ?? '/dashboard'
+  const locationState = location.state as { from?: string; bookServiceId?: string } | null
+  const from = locationState?.from ?? '/dashboard'
+  const bookServiceId = locationState?.bookServiceId
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,7 +34,7 @@ export function LoginPage() {
       return
     }
 
-    navigate(from, { replace: true })
+    navigate(from, { replace: true, state: bookServiceId ? { bookServiceId } : undefined })
   }
 
   async function handleForgotPassword(event: React.FormEvent) {
@@ -178,7 +180,7 @@ export function LoginPage() {
 
             <p className="text-center text-xs tracking-wide text-black/50">
               Don't have an account?{' '}
-              <Link to="/signup" className="font-bold text-black underline-offset-4 hover:underline">
+              <Link to="/signup" state={location.state} className="font-bold text-black underline-offset-4 hover:underline">
                 SIGN UP
               </Link>
             </p>

@@ -1,10 +1,14 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
 export function SignupPage() {
   const { signUp } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const locationState = location.state as { from?: string; bookServiceId?: string } | null
+  const from = locationState?.from ?? '/'
+  const bookServiceId = locationState?.bookServiceId
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -25,7 +29,7 @@ export function SignupPage() {
       return
     }
 
-    navigate('/')
+    navigate(from, { state: bookServiceId ? { bookServiceId } : undefined })
   }
 
   return (
@@ -94,7 +98,7 @@ export function SignupPage() {
 
             <p className="text-center text-xs tracking-wide text-black/50">
               Already have an account?{' '}
-              <Link to="/login" className="font-bold text-black underline-offset-4 hover:underline">
+              <Link to="/login" state={location.state} className="font-bold text-black underline-offset-4 hover:underline">
                 SIGN IN
               </Link>
             </p>

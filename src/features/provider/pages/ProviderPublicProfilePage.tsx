@@ -646,10 +646,25 @@ export function ProviderPublicProfilePage() {
 
     function handleBookClick(service: Service) {
         if (!session) {
-            navigate('/login', { state: { from: location.pathname } })
+            navigate('/login', { state: { from: location.pathname, bookServiceId: service.id } })
             return
         }
         setBookingService(service)
+    }
+
+    // If the visitor was just redirected through login/signup while trying
+    // to book a specific service, resume that booking once it's loaded.
+    const resumeBookServiceId = (location.state as { bookServiceId?: string } | null)?.bookServiceId
+    const resumedService = session && resumeBookServiceId
+        ? (services.find((s) => s.id === resumeBookServiceId) ?? null)
+        : null
+    const activeBookingService = bookingService ?? resumedService
+
+    function closeBookingModal() {
+        setBookingService(null)
+        if (resumedService) {
+            navigate(location.pathname, { replace: true })
+        }
     }
 
     if (profileLoading) {
@@ -687,12 +702,12 @@ export function ProviderPublicProfilePage() {
     return (
         <div className="min-h-screen bg-white relative">
 
-            {bookingService && (
+            {activeBookingService && (
                 <BookingModal
-                    service={bookingService}
+                    service={activeBookingService}
                     providerId={profile.id}
                     businessName={profile.business_name}
-                    onClose={() => setBookingService(null)}
+                    onClose={closeBookingModal}
                 />
             )}
 
