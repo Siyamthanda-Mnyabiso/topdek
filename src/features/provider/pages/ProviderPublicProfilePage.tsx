@@ -537,7 +537,7 @@ export function ProviderPublicProfilePage() {
     const [linkCopied, setLinkCopied] = useState(false)
     const [bookingService, setBookingService] = useState<Service | null>(null)
 
-    const { data: profile, isLoading: profileLoading } = useQuery<ProviderProfile | null>({
+    const { data: profile, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = useQuery<ProviderProfile | null>({
         queryKey: ['provider-profile', id],
         queryFn: async () => {
             if (!id) return null
@@ -675,6 +675,27 @@ export function ProviderPublicProfilePage() {
                     <p className="text-xs font-semibold tracking-[0.2em] uppercase text-black/40">
                         LOADING...
                     </p>
+                </div>
+            </div>
+        )
+    }
+
+    if (profileError) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh] px-6">
+                <div className="text-center">
+                    <h1 className="text-3xl font-black uppercase tracking-tight">COULDN'T LOAD PROFILE</h1>
+                    <p className="mt-2 text-sm text-black/50">
+                        Something went wrong loading this page. Check your connection and try again —
+                        if you opened this from an app like WhatsApp or Instagram, try opening it in
+                        your regular browser instead.
+                    </p>
+                    <button
+                        onClick={() => void refetchProfile()}
+                        className="mt-6 border border-black bg-black px-6 py-3 text-xs font-bold tracking-[0.15em] uppercase text-white transition-colors hover:bg-white hover:text-black"
+                    >
+                        TRY AGAIN
+                    </button>
                 </div>
             </div>
         )
