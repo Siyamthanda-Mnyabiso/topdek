@@ -30,5 +30,6 @@ export type ProviderProfileInsert = Pick<
   facebook_url?: string | null
   tiktok_url?: string | null
   twitter_url?: string | null
+  whatsapp_number?: string | null
   website_url?: string | null
 }

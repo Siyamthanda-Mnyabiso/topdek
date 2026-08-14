@@ -15,6 +15,7 @@ interface StoreForm {
     facebook_url: string
     tiktok_url: string
     twitter_url: string
+    whatsapp_number: string
     website_url: string
 }
 
@@ -51,6 +52,7 @@ export function StoreSettingsPage() {
         facebook_url: '',
         tiktok_url: '',
         twitter_url: '',
+        whatsapp_number: '',
         website_url: '',
     })
 
@@ -93,6 +95,7 @@ export function StoreSettingsPage() {
                 facebook_url: data.facebook_url ?? '',
                 tiktok_url: data.tiktok_url ?? '',
                 twitter_url: data.twitter_url ?? '',
+                whatsapp_number: data.whatsapp_number ?? '',
                 website_url: data.website_url ?? '',
             })
             setCoverPreview(data.cover_image_url ?? null)
@@ -459,6 +462,19 @@ export function StoreSettingsPage() {
                                 value={form.twitter_url}
                                 onChange={(e) => setForm({ ...form, twitter_url: e.target.value })}
                                 placeholder="https://x.com/yourhandle"
+                                className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold tracking-[0.15em] uppercase">
+                                WHATSAPP NUMBER
+                            </label>
+                            <input
+                                type="tel"
+                                value={form.whatsapp_number}
+                                onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })}
+                                placeholder="+27 82 000 0000"
                                 className="w-full border border-black px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-black"
                             />
                         </div>

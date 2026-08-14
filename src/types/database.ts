@@ -44,6 +44,7 @@ export interface ProviderProfile {
   facebook_url: string | null
   tiktok_url: string | null
   twitter_url: string | null
+  whatsapp_number: string | null
   website_url: string | null
   created_at: string
   updated_at: string
@@ -175,6 +176,7 @@ export type Database = {
           facebook_url?: string | null
           tiktok_url?: string | null
           twitter_url?: string | null
+          whatsapp_number?: string | null
           website_url?: string | null
           created_at?: string
           updated_at?: string
@@ -190,6 +192,7 @@ export type Database = {
           facebook_url?: string | null
           tiktok_url?: string | null
           twitter_url?: string | null
+          whatsapp_number?: string | null
           website_url?: string | null
           updated_at?: string
         }

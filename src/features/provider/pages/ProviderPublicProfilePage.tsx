@@ -39,6 +39,7 @@ interface ProviderProfile {
     facebook_url: string | null
     tiktok_url: string | null
     twitter_url: string | null
+    whatsapp_number: string | null
     website_url: string | null
     created_at: string
 }
@@ -47,6 +48,10 @@ interface ProviderProfile {
 
 function withScheme(url: string): string {
     return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
+function toWhatsAppLink(number: string): string {
+    return `https://wa.me/${number.replace(/\D/g, '')}`
 }
 
 function InstagramIcon() {
@@ -84,16 +89,27 @@ function XIcon() {
     )
 }
 
+function WhatsAppIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
+            <path d="M4 20l1.3-3.9A8 8 0 1 1 8.9 19.7L4 20Z" />
+            <path d="M8.5 9.5c0 3.5 2.5 6 6 6" />
+        </svg>
+    )
+}
+
 const SOCIAL_LINKS: {
-    key: 'instagram_url' | 'facebook_url' | 'tiktok_url' | 'twitter_url' | 'website_url'
+    key: 'instagram_url' | 'facebook_url' | 'tiktok_url' | 'twitter_url' | 'whatsapp_number' | 'website_url'
     label: string
     Icon: React.ComponentType<{ className?: string }>
+    toHref: (value: string) => string
 }[] = [
-    { key: 'instagram_url', label: 'INSTAGRAM', Icon: InstagramIcon },
-    { key: 'facebook_url', label: 'FACEBOOK', Icon: FacebookIcon },
-    { key: 'tiktok_url', label: 'TIKTOK', Icon: TikTokIcon },
-    { key: 'twitter_url', label: 'X', Icon: XIcon },
-    { key: 'website_url', label: 'WEBSITE', Icon: Globe },
+    { key: 'instagram_url', label: 'INSTAGRAM', Icon: InstagramIcon, toHref: withScheme },
+    { key: 'facebook_url', label: 'FACEBOOK', Icon: FacebookIcon, toHref: withScheme },
+    { key: 'tiktok_url', label: 'TIKTOK', Icon: TikTokIcon, toHref: withScheme },
+    { key: 'twitter_url', label: 'X', Icon: XIcon, toHref: withScheme },
+    { key: 'whatsapp_number', label: 'WHATSAPP', Icon: WhatsAppIcon, toHref: toWhatsAppLink },
+    { key: 'website_url', label: 'WEBSITE', Icon: Globe, toHref: withScheme },
 ]
 
 // --- Carousel for a single service's images -------------------------------
@@ -838,14 +854,14 @@ export function ProviderPublicProfilePage() {
                             CONNECT
                         </h2>
                         <div className="flex flex-wrap gap-3">
-                            {SOCIAL_LINKS.map(({ key, label, Icon }) => {
+                            {SOCIAL_LINKS.map(({ key, label, Icon, toHref }) => {
                                 const url = profile[key]
                                 if (!url) return null
 
                                 return (
                                     <a
                                         key={key}
-                                        href={withScheme(url)}
+                                        href={toHref(url)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="flex items-center gap-2 border border-black px-4 py-2.5 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
