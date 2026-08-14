@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { notifyUser } from '@/lib/notifications'
@@ -538,6 +538,19 @@ export function ProviderPublicProfileClient({ slug }: { slug: string }) {
         },
         staleTime: 5 * 60 * 1000,
     })
+
+    const recordedViewFor = useRef<string | null>(null)
+    useEffect(() => {
+        if (!profile?.id || recordedViewFor.current === profile.id) return
+        recordedViewFor.current = profile.id
+        void fetch('/api/storefront-views', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ providerId: profile.id }),
+        }).catch(() => {
+            // Best-effort telemetry — a failed view record shouldn't affect the visitor.
+        })
+    }, [profile?.id])
 
     const { data: services = [], isLoading: servicesLoading } = useQuery<Service[]>({
         queryKey: ['provider-services', profile?.id],

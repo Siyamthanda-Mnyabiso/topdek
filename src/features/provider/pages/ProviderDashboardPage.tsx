@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { Building2, Package, Settings, Eye, Clock, Users } from 'lucide-react'
+import { Building2, Package, Settings, Eye, Clock, Users, BarChart3 } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { ShareStoreCard } from '@/features/provider/components/ShareStoreCard'
@@ -22,6 +22,23 @@ export function ProviderDashboardPage() {
       return data
     },
     enabled: !!profile,
+  })
+
+  const { data: monthlyViews } = useQuery({
+    queryKey: ['storefront-views-count', providerProfile?.id],
+    queryFn: async () => {
+      if (!providerProfile) return 0
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+      const { count } = await supabase
+          .from('storefront_views')
+          .select('id', { count: 'exact', head: true })
+          .eq('provider_id', providerProfile.id)
+          .gte('viewed_at', startOfMonth.toISOString())
+      return count ?? 0
+    },
+    enabled: !!providerProfile,
   })
 
   if (isLoading) {
@@ -48,6 +65,19 @@ export function ProviderDashboardPage() {
         </div>
 
         <div data-tour="provider-dashboard-cards" className="px-6 md:px-12 lg:px-20 py-12 space-y-4 max-w-2xl">
+
+          {/* STOREFRONT VIEWS */}
+          {providerProfile && (
+              <div className="border border-black p-6 flex items-center gap-4">
+                <BarChart3 className="h-5 w-5" />
+                <div>
+                  <h2 className="font-black uppercase tracking-tight text-2xl">
+                    {monthlyViews ?? 0}
+                  </h2>
+                  <p className="text-xs text-black/40 mt-0.5">Storefront views this month</p>
+                </div>
+              </div>
+          )}
 
           {/* BOOKINGS */}
           <div className="border border-black p-6 flex items-center justify-between">

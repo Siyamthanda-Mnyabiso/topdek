@@ -3,6 +3,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { TourHost } from '@/features/onboarding/components/TourHost'
 import { Providers } from '@/components/Providers'
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
+import { CookieConsent } from '@/components/CookieConsent'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <TourHost />
           </div>
           <ServiceWorkerRegister />
+          <CookieConsent />
         </Providers>
       </body>
     </html>
