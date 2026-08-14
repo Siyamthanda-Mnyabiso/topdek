@@ -1,5 +1,7 @@
+'use client'
+
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Building2, Package, Settings, Eye, Clock, Users } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
@@ -57,7 +59,7 @@ export function ProviderDashboardPage() {
               </div>
             </div>
             <Link
-                to="/provider/bookings"
+                href="/provider/bookings"
                 className="border border-black px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
             >
               VIEW
@@ -74,7 +76,7 @@ export function ProviderDashboardPage() {
               </div>
             </div>
             <Link
-                to="/provider/availability"
+                href="/provider/availability"
                 className="border border-black px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
             >
               MANAGE
@@ -94,14 +96,14 @@ export function ProviderDashboardPage() {
             </div>
             {providerProfile ? (
                 <Link
-                    to="/provider/store"
+                    href="/provider/store"
                     className="border border-black px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
                 >
                   EDIT
                 </Link>
             ) : (
                 <Link
-                    to="/provider/setup"
+                    href="/provider/setup"
                     className="border border-black bg-black text-white px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-white hover:text-black"
                 >
                   CREATE
@@ -110,7 +112,7 @@ export function ProviderDashboardPage() {
           </div>
 
           {/* SHARE STORE — QR code + copy link */}
-          {providerProfile && <ShareStoreCard providerId={providerProfile.id} />}
+          {providerProfile && <ShareStoreCard providerSlug={providerProfile.slug} />}
 
           {/* SERVICES */}
           <div className="border border-black p-6 flex items-center justify-between">
@@ -122,7 +124,7 @@ export function ProviderDashboardPage() {
               </div>
             </div>
             <Link
-                to="/provider/services"
+                href="/provider/services"
                 className="border border-black px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
             >
               MANAGE
@@ -140,7 +142,7 @@ export function ProviderDashboardPage() {
                   </div>
                 </div>
                 <Link
-                    to={`/professionals/${providerProfile.id}`}
+                    href={`/professionals/${providerProfile.slug}`}
                     className="border border-black px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
                 >
                   VIEW
@@ -158,7 +160,7 @@ export function ProviderDashboardPage() {
               </div>
             </div>
             <Link
-                to="/settings"
+                href="/settings"
                 className="border border-black px-4 py-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
             >
               MANAGE

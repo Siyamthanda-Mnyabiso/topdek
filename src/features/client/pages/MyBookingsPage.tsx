@@ -1,5 +1,7 @@
+'use client'
+
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Calendar, Clock, User, MapPin } from 'lucide-react'
@@ -24,17 +26,13 @@ interface Booking {
 
 export function MyBookingsPage() {
     const { profile, isLoading: authLoading } = useAuth()
-    const navigate = useNavigate()
+    const router = useRouter()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [bookings, setBookings] = useState<Booking[]>([])
 
     useEffect(() => {
-        if (authLoading) return
-        if (!profile) {
-            navigate('/login')
-            return
-        }
+        if (authLoading || !profile) return
 
         async function loadBookings() {
             if (!profile) return
@@ -64,7 +62,7 @@ export function MyBookingsPage() {
         }
 
         void loadBookings()
-    }, [profile, authLoading, navigate])
+    }, [profile, authLoading])
 
     const getStatusColor = (status: string) => {
         switch(status) {
@@ -132,7 +130,7 @@ export function MyBookingsPage() {
                             Browse professionals and book your first service!
                         </p>
                         <button
-                            onClick={() => navigate('/professionals')}
+                            onClick={() => router.push('/professionals')}
                             className="mt-6 border border-black px-6 py-3 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
                         >
                             BROWSE PROFESSIONALS

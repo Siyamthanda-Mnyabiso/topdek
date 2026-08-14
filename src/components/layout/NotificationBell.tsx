@@ -1,5 +1,7 @@
+'use client'
+
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { Bell, BellRing } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useNotifications } from '@/lib/notifications'
@@ -19,7 +21,7 @@ function timeAgo(iso: string) {
 
 export function NotificationBell({ dark = false }: { dark?: boolean }) {
   const { authUser } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
   const { notifications, unreadCount, markRead, markAllRead } = useNotifications()
   const [open, setOpen] = useState(false)
   const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('default')
@@ -53,7 +55,7 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
     if (!notification.read_at) markRead(notification.id)
     setOpen(false)
     const url = notification.data?.url
-    if (typeof url === 'string') navigate(url)
+    if (typeof url === 'string') router.push(url)
   }
 
   if (!authUser) return null

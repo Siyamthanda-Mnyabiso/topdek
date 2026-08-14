@@ -1,13 +1,13 @@
+'use client'
+
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Compass, Pencil, Check, X } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding'
 import { supabase } from '@/lib/supabase'
 
 export function SettingsPage() {
-  const { profile, isLoading, refreshProfile } = useAuth()
-  const navigate = useNavigate()
+  const { profile, refreshProfile } = useAuth()
   const { start } = useOnboarding()
   const [hasProviderProfile, setHasProviderProfile] = useState(false)
   const [editingName, setEditingName] = useState(false)
@@ -16,12 +16,6 @@ export function SettingsPage() {
   const [nameError, setNameError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isLoading) return
-    if (!profile) {
-      navigate('/login')
-      return
-    }
-
     async function checkProviderProfile() {
       if (!profile) return
       const { data } = await supabase
@@ -32,7 +26,7 @@ export function SettingsPage() {
       setHasProviderProfile(!!data)
     }
     void checkProviderProfile()
-  }, [profile, isLoading, navigate])
+  }, [profile])
 
   function startEditName() {
     setNameDraft(profile?.full_name ?? '')

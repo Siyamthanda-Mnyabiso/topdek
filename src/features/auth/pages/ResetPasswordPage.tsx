@@ -1,9 +1,11 @@
+'use client'
+
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 export function ResetPasswordPage() {
-    const navigate = useNavigate()
+    const router = useRouter()
     const [password, setPassword] = useState('')
     const [confirm, setConfirm] = useState('')
     const [error, setError] = useState<string | null>(null)
@@ -28,7 +30,7 @@ export function ResetPasswordPage() {
             return
         }
 
-        navigate('/dashboard')
+        router.push('/dashboard')
     }
 
     return (

@@ -1,5 +1,7 @@
+'use client'
+
 import { useEffect, useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Camera, Upload } from 'lucide-react'
@@ -33,13 +35,14 @@ const CATEGORIES = [
 
 export function StoreSettingsPage() {
     const { profile } = useAuth()
-    const navigate = useNavigate()
+    const router = useRouter()
 
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
     const [providerProfileId, setProviderProfileId] = useState<string | null>(null)
+    const [providerSlug, setProviderSlug] = useState<string | null>(null)
 
     const [form, setForm] = useState<StoreForm>({
         business_name: '',
@@ -79,11 +82,12 @@ export function StoreSettingsPage() {
                 .single()
 
             if (error || !data) {
-                navigate('/provider/setup')
+                router.push('/provider/setup')
                 return
             }
 
             setProviderProfileId(data.id)
+            setProviderSlug(data.slug)
             setForm({
                 business_name: data.business_name ?? '',
                 description: data.description ?? '',
@@ -105,7 +109,7 @@ export function StoreSettingsPage() {
         }
 
         void loadStore()
-    }, [profile, navigate])
+    }, [profile, router])
 
     async function uploadImage(
         file: File,
@@ -172,6 +176,9 @@ export function StoreSettingsPage() {
         setError(null)
         setSuccess(false)
 
+        // Note: `form` never carries `slug` — slugs are set once at store
+        // creation (ProviderSetupPage) and stay stable so shared/indexed
+        // links never break, even if business_name changes here.
         const { error } = await supabase
             .from('provider_profiles')
             .update({
@@ -191,12 +198,12 @@ export function StoreSettingsPage() {
 
         setTimeout(() => {
             setSuccess(false)
-            navigate('/')
+            router.push('/')
         }, 800)
     }
 
-    const shareLink = providerProfileId
-        ? `${window.location.origin}/professionals/${providerProfileId}`
+    const shareLink = providerSlug
+        ? `${window.location.origin}/professionals/${providerSlug}`
         : ''
 
     const qrCode = shareLink
@@ -570,7 +577,7 @@ export function StoreSettingsPage() {
                         {saving ? 'SAVING...' : 'SAVE CHANGES'}
                     </button>
                     <button
-                        onClick={() => navigate('/provider')}
+                        onClick={() => router.push('/provider')}
                         className="border border-black/20 px-6 py-3 text-xs font-bold tracking-[0.15em] uppercase text-black/40 transition-colors hover:border-black hover:text-black"
                     >
                         CANCEL

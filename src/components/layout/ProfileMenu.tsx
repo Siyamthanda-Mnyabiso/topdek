@@ -1,6 +1,8 @@
+'use client'
+
 import { useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { ChevronDown, LayoutDashboard, LifeBuoy, LogOut, Settings, Store } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding'
@@ -16,7 +18,7 @@ const itemClass =
   'flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-black outline-none transition-colors data-[highlighted]:bg-black data-[highlighted]:text-white cursor-pointer'
 
 export function ProfileMenu({ email, hasProviderProfile, onSignOut, dark = false }: ProfileMenuProps) {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { activeStep } = useOnboarding()
   const [open, setOpen] = useState(false)
 
@@ -46,13 +48,13 @@ export function ProfileMenu({ email, hasProviderProfile, onSignOut, dark = false
           sideOffset={10}
           className="z-50 w-56 border border-black bg-white py-1.5 shadow-xl animate-tour-scale-in"
         >
-          <DropdownMenu.Item className={itemClass} onSelect={() => navigate('/dashboard')}>
+          <DropdownMenu.Item className={itemClass} onSelect={() => router.push('/dashboard')}>
             <LayoutDashboard className="h-3.5 w-3.5" />
             Dashboard
           </DropdownMenu.Item>
 
           {hasProviderProfile && (
-            <DropdownMenu.Item className={itemClass} onSelect={() => navigate('/provider')}>
+            <DropdownMenu.Item className={itemClass} onSelect={() => router.push('/provider')}>
               <Store className="h-3.5 w-3.5" />
               Provider Dashboard
             </DropdownMenu.Item>
@@ -61,13 +63,13 @@ export function ProfileMenu({ email, hasProviderProfile, onSignOut, dark = false
           <DropdownMenu.Item
             className={itemClass}
             data-tour="settings-link"
-            onSelect={() => navigate('/settings')}
+            onSelect={() => router.push('/settings')}
           >
             <Settings className="h-3.5 w-3.5" />
             Settings
           </DropdownMenu.Item>
 
-          <DropdownMenu.Item className={itemClass} data-tour="help-link" onSelect={() => navigate('/help')}>
+          <DropdownMenu.Item className={itemClass} data-tour="help-link" onSelect={() => router.push('/help')}>
             <LifeBuoy className="h-3.5 w-3.5" />
             Help & Support
           </DropdownMenu.Item>

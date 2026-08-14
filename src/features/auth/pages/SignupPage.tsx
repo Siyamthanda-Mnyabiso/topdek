@@ -1,14 +1,18 @@
+'use client'
+
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { withBookServiceParam } from '@/lib/booking-intent'
 
 export function SignupPage() {
   const { signUp } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const locationState = location.state as { from?: string; bookServiceId?: string } | null
-  const from = locationState?.from ?? '/'
-  const bookServiceId = locationState?.bookServiceId
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const from = searchParams.get('from') ?? '/'
+  const bookServiceId = searchParams.get('bookService')
+  const loginHref = searchParams.size > 0 ? `/login?${searchParams.toString()}` : '/login'
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -29,7 +33,7 @@ export function SignupPage() {
       return
     }
 
-    navigate(from, { state: bookServiceId ? { bookServiceId } : undefined })
+    router.push(withBookServiceParam(from, bookServiceId))
   }
 
   return (
@@ -98,7 +102,7 @@ export function SignupPage() {
 
             <p className="text-center text-xs tracking-wide text-black/50">
               Already have an account?{' '}
-              <Link to="/login" state={location.state} className="font-bold text-black underline-offset-4 hover:underline">
+              <Link href={loginHref} className="font-bold text-black underline-offset-4 hover:underline">
                 SIGN IN
               </Link>
             </p>

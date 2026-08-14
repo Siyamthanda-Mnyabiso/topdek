@@ -1,5 +1,6 @@
+'use client'
+
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { notifyUser } from '@/lib/notifications'
@@ -28,7 +29,6 @@ type FilterStatus = 'all' | 'pending' | 'accepted' | 'declined' | 'cancelled' | 
 
 export function BookingsPage() {
     const { profile, isLoading: authLoading } = useAuth()
-    const navigate = useNavigate()
 
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -42,11 +42,7 @@ export function BookingsPage() {
     const [editEndTime, setEditEndTime] = useState('')
 
     useEffect(() => {
-        if (authLoading) return
-        if (!profile) {
-            navigate('/login')
-            return
-        }
+        if (authLoading || !profile) return
 
         async function loadBookings(providerId: string) {
             const { data, error } = await supabase
@@ -90,7 +86,7 @@ export function BookingsPage() {
         }
 
         void loadProviderProfile()
-    }, [profile, authLoading, navigate])
+    }, [profile, authLoading])
 
     async function handleUpdateStatus(bookingId: string, newStatus: 'accepted' | 'declined' | 'cancelled' | 'completed') {
         setProcessingId(bookingId)

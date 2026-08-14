@@ -1,15 +1,21 @@
+'use client'
+
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { supabase, type ProviderProfileInsert } from '@/lib/supabase'
+import { slugify, withSlugSuffix } from '@/lib/slug'
 import { Store } from 'lucide-react'
+
+const MAX_SLUG_ATTEMPTS = 10
+const UNIQUE_VIOLATION = '23505'
 
 type Step = 'store' | 'done'
 
 export function ProviderSetupPage() {
   const { profile } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [step, setStep] = useState<Step>('store')
 
@@ -23,15 +29,24 @@ export function ProviderSetupPage() {
     mutationFn: async () => {
       if (!profile) throw new Error('You must be logged in')
 
-      const { error: insertError } = await supabase.from('provider_profiles').insert({
-        user_id: profile.id,
-        business_name: businessName.trim(),
-        description: description.trim() || null,
-        location: location.trim() || null,
-        phone: phone.trim() || null,
-      } satisfies ProviderProfileInsert)
+      const baseSlug = slugify(businessName)
 
-      if (insertError) throw insertError
+      for (let attempt = 1; attempt <= MAX_SLUG_ATTEMPTS; attempt++) {
+        const { error: insertError } = await supabase.from('provider_profiles').insert({
+          user_id: profile.id,
+          business_name: businessName.trim(),
+          slug: withSlugSuffix(baseSlug, attempt),
+          description: description.trim() || null,
+          location: location.trim() || null,
+          phone: phone.trim() || null,
+        } satisfies ProviderProfileInsert)
+
+        if (!insertError) return
+        const isSlugCollision =
+          insertError.code === UNIQUE_VIOLATION && insertError.message.includes('slug')
+        if (!isSlugCollision) throw insertError
+        if (attempt === MAX_SLUG_ATTEMPTS) throw insertError
+      }
     },
     onSuccess: () => {
       setStep('done')
@@ -49,7 +64,7 @@ export function ProviderSetupPage() {
 
   function handleFinish() {
     // redirect straight to provider dashboard (services page)
-    navigate('/provider')
+    router.push('/provider')
   }
 
   // ── STEP INDICATOR (UPDATED) ──

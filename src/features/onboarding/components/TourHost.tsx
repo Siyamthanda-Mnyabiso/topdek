@@ -1,11 +1,27 @@
-import { useEffect, useRef, useState } from 'react'
+'use client'
+
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { usePathname, useRouter } from 'next/navigation'
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding'
 import { TourOverlay } from '@/features/onboarding/components/TourOverlay'
 import { TourPopover } from '@/features/onboarding/components/TourPopover'
 import { WelcomeScreen } from '@/features/onboarding/components/WelcomeScreen'
 import { CompletionScreen } from '@/features/onboarding/components/CompletionScreen'
+
+function subscribeReducedMotion(callback: () => void) {
+  const mql = window.matchMedia('(prefers-reduced-motion: reduce)')
+  mql.addEventListener('change', callback)
+  return () => mql.removeEventListener('change', callback)
+}
+
+function getReducedMotionSnapshot() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function getReducedMotionServerSnapshot() {
+  return false
+}
 
 function isVisible(el: Element) {
   const rect = el.getBoundingClientRect()
@@ -32,11 +48,15 @@ function isInViewport(rect: DOMRect) {
 export function TourHost() {
   const { status, tour, stepIndex, activeStep, next, prev, skip, finish, begin, dismissCelebration } =
     useOnboarding()
-  const location = useLocation()
-  const navigate = useNavigate()
+  const pathname = usePathname()
+  const router = useRouter()
   const [rect, setRect] = useState<DOMRect | null>(null)
   const targetElRef = useRef<HTMLElement | null>(null)
-  const [reduceMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const reduceMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotionSnapshot,
+    getReducedMotionServerSnapshot,
+  )
 
   useEffect(() => {
     if (status !== 'running' || !activeStep) {
@@ -45,8 +65,8 @@ export function TourHost() {
       return
     }
 
-    if (activeStep.route && location.pathname !== activeStep.route) {
-      navigate(activeStep.route)
+    if (activeStep.route && pathname !== activeStep.route) {
+      router.push(activeStep.route)
       return
     }
 
@@ -83,7 +103,7 @@ export function TourHost() {
       cancelled = true
       cancelAnimationFrame(frame)
     }
-  }, [status, activeStep, location.pathname, navigate, reduceMotion])
+  }, [status, activeStep, pathname, router, reduceMotion])
 
   // Keep the spotlight glued to its target across window resizes and any
   // scrolling the click-blocker doesn't manage to suppress (momentum

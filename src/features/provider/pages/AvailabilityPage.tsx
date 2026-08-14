@@ -1,5 +1,6 @@
+'use client'
+
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Plus, Trash2, Clock, X, Pencil, Check } from 'lucide-react'
@@ -35,7 +36,6 @@ function parseLocalDate(dateStr: string): Date {
 
 export function AvailabilityPage() {
     const { profile, isLoading: authLoading } = useAuth()
-    const navigate = useNavigate()
 
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -56,11 +56,7 @@ export function AvailabilityPage() {
     const [editError, setEditError] = useState<string | null>(null)
 
     useEffect(() => {
-        if (authLoading) return
-        if (!profile) {
-            navigate('/login')
-            return
-        }
+        if (authLoading || !profile) return
 
         async function loadAvailability(providerId: string) {
             const { data, error } = await supabase
@@ -103,7 +99,7 @@ export function AvailabilityPage() {
         }
 
         void loadProviderProfile()
-    }, [profile, authLoading, navigate])
+    }, [profile, authLoading])
 
     function toggleDateSelection(dateStr: string) {
         setSelectedDates(prev => {

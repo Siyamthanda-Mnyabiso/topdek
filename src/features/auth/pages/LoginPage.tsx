@@ -1,15 +1,19 @@
+'use client'
+
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { withBookServiceParam } from '@/lib/booking-intent'
 
 export function LoginPage() {
   const { signIn } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const locationState = location.state as { from?: string; bookServiceId?: string } | null
-  const from = locationState?.from ?? '/dashboard'
-  const bookServiceId = locationState?.bookServiceId
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const from = searchParams.get('from') ?? '/dashboard'
+  const bookServiceId = searchParams.get('bookService')
+  const signupHref = searchParams.size > 0 ? `/signup?${searchParams.toString()}` : '/signup'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -34,7 +38,7 @@ export function LoginPage() {
       return
     }
 
-    navigate(from, { replace: true, state: bookServiceId ? { bookServiceId } : undefined })
+    router.replace(withBookServiceParam(from, bookServiceId))
   }
 
   async function handleForgotPassword(event: React.FormEvent) {
@@ -180,7 +184,7 @@ export function LoginPage() {
 
             <p className="text-center text-xs tracking-wide text-black/50">
               Don't have an account?{' '}
-              <Link to="/signup" state={location.state} className="font-bold text-black underline-offset-4 hover:underline">
+              <Link href={signupHref} className="font-bold text-black underline-offset-4 hover:underline">
                 SIGN UP
               </Link>
             </p>

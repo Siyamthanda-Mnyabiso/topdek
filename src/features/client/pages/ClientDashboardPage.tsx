@@ -1,7 +1,10 @@
+'use client'
+
 import { useState } from 'react'
 import { Building2, Heart, Search, X } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 
@@ -9,6 +12,7 @@ interface ProviderProfile {
   id: string
   user_id: string
   business_name: string
+  slug: string
   description: string | null
   location: string | null
   logo_url: string | null
@@ -29,7 +33,7 @@ function getProviderProfile(saved: SavedProvider): ProviderProfile {
 
 export function ClientDashboardPage() {
   const { profile } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
 
@@ -153,13 +157,13 @@ export function ClientDashboardPage() {
                   </div>
                   <div className="flex gap-3">
                     <Link
-                        to="/provider/store"
+                        href="/provider/store"
                         className="border border-black px-5 py-2.5 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-black hover:text-white"
                     >
                       EDIT STORE
                     </Link>
                     <Link
-                        to="/provider/services"
+                        href="/provider/services"
                         className="border border-black bg-black text-white px-5 py-2.5 text-xs font-bold tracking-[0.15em] uppercase transition-colors hover:bg-white hover:text-black"
                     >
                       MANAGE SERVICES
@@ -175,7 +179,7 @@ export function ClientDashboardPage() {
                     Create your store to start offering services on the marketplace.
                   </p>
                   <Link
-                      to="/provider/setup"
+                      href="/provider/setup"
                       className="mt-6 inline-block border border-black bg-black px-6 py-3 text-xs font-bold tracking-[0.15em] uppercase text-white transition-colors hover:bg-white hover:text-black"
                   >
                     CREATE STORE
@@ -224,7 +228,7 @@ export function ClientDashboardPage() {
                             <X className="h-3.5 w-3.5" />
                           </button>
                           <div
-                              onClick={() => navigate(`/professionals/${saved.provider_id}`)}
+                              onClick={() => router.push(`/professionals/${savedProfile?.slug}`)}
                               className="cursor-pointer"
                           >
                             <div className="h-36 overflow-hidden bg-zinc-900">
@@ -264,7 +268,7 @@ export function ClientDashboardPage() {
                 <h2 className="text-2xl font-black uppercase tracking-tight">BROWSE PROVIDERS</h2>
               </div>
               <Link
-                  to="/professionals"
+                  href="/professionals"
                   className="text-xs font-bold tracking-[0.15em] uppercase underline-offset-4 hover:underline"
               >
                 VIEW ALL
@@ -320,7 +324,7 @@ export function ClientDashboardPage() {
                           )}
 
                           <div
-                              onClick={() => navigate(`/professionals/${pro.id}`)}
+                              onClick={() => router.push(`/professionals/${pro.slug}`)}
                               className="cursor-pointer"
                           >
                             <div className="h-36 overflow-hidden bg-zinc-900">

@@ -35,6 +35,7 @@ export interface ProviderProfile {
   id: string
   user_id: string
   business_name: string
+  slug: string
   description: string | null
   location: string | null
   phone: string | null
@@ -46,6 +47,7 @@ export interface ProviderProfile {
   twitter_url: string | null
   whatsapp_number: string | null
   website_url: string | null
+  categories: string[] | null
   created_at: string
   updated_at: string
 }
@@ -167,6 +169,7 @@ export type Database = {
           id?: string
           user_id: string
           business_name: string
+          slug: string
           description?: string | null
           location?: string | null
           phone?: string | null
@@ -178,6 +181,7 @@ export type Database = {
           twitter_url?: string | null
           whatsapp_number?: string | null
           website_url?: string | null
+          categories?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -194,6 +198,7 @@ export type Database = {
           twitter_url?: string | null
           whatsapp_number?: string | null
           website_url?: string | null
+          categories?: string[] | null
           updated_at?: string
         }
         Relationships: []

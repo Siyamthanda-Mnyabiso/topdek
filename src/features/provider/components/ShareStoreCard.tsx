@@ -1,16 +1,18 @@
+'use client'
+
 import { useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { Copy, Check, Download } from 'lucide-react'
 
 interface ShareStoreCardProps {
-    providerId: string
+    providerSlug: string
 }
 
-export function ShareStoreCard({ providerId }: ShareStoreCardProps) {
+export function ShareStoreCard({ providerSlug }: ShareStoreCardProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const [copied, setCopied] = useState(false)
 
-    const shareUrl = `${window.location.origin}/professionals/${providerId}`
+    const shareUrl = `${window.location.origin}/professionals/${providerSlug}`
 
     useEffect(() => {
         if (!canvasRef.current) return

@@ -1,5 +1,8 @@
+'use client'
+
 import { useState, useEffect } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
@@ -8,9 +11,47 @@ import { NotificationBell } from '@/components/layout/NotificationBell'
 import { ProfileMenu } from '@/components/layout/ProfileMenu'
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding'
 
+function NavItem({
+    to,
+    label,
+    active,
+    dark,
+    mobile,
+    onClick,
+}: {
+    to: string
+    label: string
+    active: boolean
+    dark?: boolean
+    mobile?: boolean
+    onClick?: () => void
+}) {
+    return (
+        <Link
+            href={to}
+            onClick={onClick}
+            className={cn(
+                mobile
+                    ? cn(
+                        'py-3 text-sm font-bold tracking-[0.1em] uppercase border-b border-black/10',
+                        active ? 'text-black' : 'text-black/60',
+                    )
+                    : cn(
+                        'text-xs font-semibold tracking-[0.15em] uppercase transition-colors',
+                        dark
+                            ? active ? 'text-white' : 'text-white/50 hover:text-white'
+                            : active ? 'text-black' : 'text-black/50 hover:text-black',
+                    ),
+            )}
+        >
+            {label}
+        </Link>
+    )
+}
+
 export function Navbar() {
     const { session, profile, signOut } = useAuth()
-    const { pathname } = useLocation()
+    const pathname = usePathname()
     const isHome = pathname === '/'
     const [menuOpen, setMenuOpen] = useState(false)
     const [hasProviderProfile, setHasProviderProfile] = useState(false)
@@ -81,7 +122,7 @@ export function Navbar() {
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
 
                 <Link
-                    to="/"
+                    href="/"
                     onClick={() => setMenuOpen(false)}
                     className={cn(
                         'text-sm font-black tracking-[0.2em] uppercase',
@@ -94,20 +135,13 @@ export function Navbar() {
                 {/* Desktop nav */}
                 <nav data-tour="nav-links" className="hidden items-center gap-6 lg:gap-8 sm:flex">
                     {navItems.map(({ to, label }) => (
-                        <NavLink
+                        <NavItem
                             key={to}
                             to={to}
-                            className={({ isActive }) =>
-                                cn(
-                                    'text-xs font-semibold tracking-[0.15em] uppercase transition-colors',
-                                    barIsTransparent
-                                        ? isActive ? 'text-white' : 'text-white/50 hover:text-white'
-                                        : isActive ? 'text-black' : 'text-black/50 hover:text-black',
-                                )
-                            }
-                        >
-                            {label}
-                        </NavLink>
+                            label={label}
+                            active={pathname === to}
+                            dark={barIsTransparent}
+                        />
                     ))}
                 </nav>
 
@@ -127,7 +161,7 @@ export function Navbar() {
                     ) : (
                         <>
                             <Link
-                                to="/login"
+                                href="/login"
                                 className={cn(
                                     'text-xs font-semibold tracking-[0.1em] uppercase transition-colors',
                                     barIsTransparent ? 'text-white/70 hover:text-white' : 'text-black hover:text-black/60',
@@ -137,7 +171,7 @@ export function Navbar() {
                             </Link>
 
                             <Link
-                                to="/signup"
+                                href="/signup"
                                 className={cn(
                                     'border px-4 py-2 text-xs font-bold tracking-[0.1em] uppercase transition-colors',
                                     barIsTransparent
@@ -174,19 +208,14 @@ export function Navbar() {
             >
                 <nav data-tour="nav-links" className="flex flex-col px-4 py-2">
                     {navItems.map(({ to, label }) => (
-                        <NavLink
+                        <NavItem
                             key={to}
                             to={to}
+                            label={label}
+                            active={pathname === to}
+                            mobile
                             onClick={() => setMenuOpen(false)}
-                            className={({ isActive }) =>
-                                cn(
-                                    'py-3 text-sm font-bold tracking-[0.1em] uppercase border-b border-black/10',
-                                    isActive ? 'text-black' : 'text-black/60',
-                                )
-                            }
-                        >
-                            {label}
-                        </NavLink>
+                        />
                     ))}
 
                     {session && profile ? (
@@ -206,14 +235,14 @@ export function Navbar() {
                     ) : (
                         <div className="flex flex-col gap-3 py-4">
                             <Link
-                                to="/login"
+                                href="/login"
                                 onClick={() => setMenuOpen(false)}
                                 className="text-xs font-semibold tracking-[0.1em] uppercase text-black text-center py-2"
                             >
                                 LOGIN
                             </Link>
                             <Link
-                                to="/signup"
+                                href="/signup"
                                 onClick={() => setMenuOpen(false)}
                                 className="border border-black bg-black px-4 py-3 text-center text-xs font-bold tracking-[0.1em] uppercase text-white"
                             >
